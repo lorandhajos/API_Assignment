@@ -1,5 +1,20 @@
 # System Design
 
+Welcome to the system design document for Data Processing Assignment. This document serves as a comprehensive guide detailing the architecture, components, and functionalities of the system. It aims to provide a clear understanding of the design choices, technical specifications, and implementation strategies involved in building and maintaining our frontend and API for the Netflix Usecase.
+
+Within these pages, you'll discover an in-depth exploration of the system's objectives, scope, and key features. Additionally, this document outlines the interactions between various modules and security measures employed to ensure the robustness and reliability of our system.
+
+## Architecture Design
+
+```mermaid
+flowchart LR
+    api["API"]
+    db[("PostgreSQL")]
+    fe["Frontend"]
+    api<-- SQL -->db
+    fe<-- JSON, XML -->api
+```
+
 ## Api
 
 ### Class Diagram
@@ -118,12 +133,10 @@ Discount "0..1" -- "2" User : involvesUsers
 
 ### Entity Relationship Diagram (ERD)
 
-![ERD](erd.svg "ERF")
+![ERD](erd.svg "ERD")
 
 ### Views
 
 ### Stored Procedures
 
 ### Triggers
-
-## Architecture Diagram
