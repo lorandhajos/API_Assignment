@@ -15,7 +15,16 @@ flowchart LR
     fe<-- JSON, XML -->api
 ```
 
-## Api
+## API
+
+The API will function as a middleman system between the front-end and the database and will satisfy at least the following conditions:
+
+#### Data Handling
+#### Endpoints and Response Handling
+#### Database Interaction
+#### Security and Authentication
+#### External Integration
+#### Framework Choice
 
 ### Class Diagram
 
@@ -133,7 +142,7 @@ Discount "0..1" -- "2" User : involvesUsers
 
 ### Entity Relationship Diagram (ERD)
 
-![ERD](erd.svg "ERD")
+![ERD](erd.jpg "ERD")
 
 ### Views
 
