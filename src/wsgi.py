@@ -1,11 +1,17 @@
-from gevent.pywsgi import WSGIServer
+import os
 
-from app import app
+from werkzeug.middleware.dispatcher import DispatcherMiddleware
+from werkzeug.serving import run_simple
 
-IP = "127.0.0.1"
-PORT = 8000
+from api import app as api_app
+from frontend import app as frontend_app
 
-print("Starting server", IP, "on port", PORT)
+os.environ['FLASK_ENV'] = 'development'
 
-http_server = WSGIServer((IP, PORT), app)
-http_server.serve_forever()
+application = DispatcherMiddleware(frontend_app, {
+    '/api': api_app
+})
+
+if __name__ == '__main__':
+    os.environ['FLASK_ENV'] = 'development'
+    run_simple('localhost', 5000, application, use_reloader=True, use_debugger=True)
