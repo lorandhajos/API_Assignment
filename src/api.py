@@ -57,7 +57,7 @@ def account():
 
 
 @app.route('/watchlist/<int:wathclist_id>/', methods=['GET'])
-@jwt_refresh_token_required
+@jwt_required
 def watchlist(wathclist_id):
     with engine.connect() as connection:
 
@@ -78,9 +78,8 @@ def watchlist(wathclist_id):
         return jsonify(result)
         # Returns the full watchlist in a nice json format, first element of this 2d array is always films, second is always series
 
-
 @app.route('history/<int:history_id>', methods=['GET'])
-@jwt_refresh_token_required
+@jwt_required
 def history(history):
     with engine.connect() as connection:
 
@@ -99,3 +98,4 @@ def history(history):
                 result[1].append(series._asdict())
         
         return jsonify(result)
+        # Returns full history in the same format as the watchlist function
