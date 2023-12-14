@@ -1,4 +1,6 @@
+from crypt import methods
 from datetime import timedelta
+import re
 
 from dotenv import dotenv_values
 from flask import Flask, jsonify, request
@@ -52,3 +54,48 @@ def account():
             result_list.append(row._asdict())
 
         return jsonify(result_list)
+
+
+@app.route('/watchlist/<int:wathclist_id>/', methods=['GET'])
+@jwt_refresh_token_required
+def watchlist(wathclist_id):
+    with engine.connect() as connection:
+
+        result = [[], []]
+
+        resultFilms = connection.execute(text(f"SELECT movie_id FROM wathclist_movies WHERE wathclist_id = :wathclist_id"))
+
+        if resultFilms.rowcount!=0:
+            for film in resultFilms:
+                result[0].append(film._asdict())
+
+        resultSeries = connection.execute(text(f"SELECT series_id FROM wathclist_series WHERE wathclist_id = :wathclist_id"))
+
+        if resultSeries.rowcount!=0:
+            for series in resultSeries:
+                result[1].append(series._asdict())
+
+        return jsonify(result)
+        # Returns the full watchlist in a nice json format, first element of this 2d array is always films, second is always series
+
+
+@app.route('history/<int:history_id>', methods=['GET'])
+@jwt_refresh_token_required
+def history(history):
+    with engine.connect() as connection:
+
+        result = [[], []]
+
+        resultFilms = connection.execute(text(f"SELECT movie_id FROM history_movies WHERE history_id = :history_id"))
+
+        if resultFilms.rowcount!=0:
+            for film in resultFilms:
+                result[0].append(film._asdict())
+
+        resultSeries = connection.execute(text(f"SELECT series_id FROM history_series WHERE history_id = :history_id"))
+
+        if resultSeries.rowcount!=0:
+            for series in resultSeries:
+                result[1].append(series._asdict())
+        
+        return jsonify(result)
