@@ -1,16 +1,17 @@
-# app.py
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = ''  # put here JWT secret key
-app.config['postgresql.sql'] = 'postgresql://postgres:example@localhost/postgres'
-db = SQLAlchemy(app)
 
-@app.route('/')
-def home():
-    return 'test'
+with open("templates/login.html", "r", encoding="utf-8") as f:
+    login = f.read()
+# app.config['SECRET_KEY'] = ''  # put here JWT secret key
+# app.config['postgresql.sql'] = 'postgresql://postgres:example@localhost/postgres'
+# db = SQLAlchemy(app)
+
+@app.route('/favicon.ico')
+def favicon():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -55,6 +56,4 @@ def dashboard():
     else:
         return redirect(url_for('login'))
 
-if __name__ == '__main__':
-    db.create_all()
-    app.run(debug=True)
+return ''
