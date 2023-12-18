@@ -1,6 +1,7 @@
 from ast import JoinedStr
 from crypt import methods
 from datetime import timedelta
+from operator import truediv
 import re
 
 from dotenv import dotenv_values
@@ -100,3 +101,35 @@ def history(history):
         
         return jsonify(result)
         # Returns full history in the same format as the watchlist function
+    
+@app.route('acces_films/<int:film_id>')
+@jwt_required
+def acces(film_id):
+    with engine.connect() as connection:
+        key = public_keys[kid]
+        profile_id = jwt.decode(token, key)
+
+        curent_age = connection.execute(text(f"SELECT age FROM profile WHERE profile_id =" + profile_id))
+
+        film_age = connection.execute(text(f"SELECT age_restrictor FROM genre INNER JOIN movie_genre ON film_id WHERE film_id = " + film_id))
+
+        if film_age > curent_age:
+            return False
+        else:
+            return True
+        
+@app.route('acces_series/<int:series_id>')
+@jwt_required
+def acces(series_id):
+    with engine.connect() as connection:
+        key = public_keys[kid]
+        profile_id = jwt.decode(token, key)
+
+        curent_age = connection.execute(text(f"SELECT age FROM profile WHERE profile_id =" + profile_id))
+
+        series_age = connection.execute(text(f"SELECT age_restrictor FROM genre INNER JOIN series_genre ON series_id WHERE series_id = " + series_id))
+
+        if series_age > curent_age:
+            return False
+        else:
+            return True
