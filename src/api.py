@@ -1,3 +1,4 @@
+from ast import JoinedStr
 from crypt import methods
 from datetime import timedelta
 import re
@@ -85,13 +86,13 @@ def history(history):
 
         result = [[], []]
 
-        resultFilms = connection.execute(text(f"SELECT movie_id FROM history_movies WHERE history_id = :history_id"))
+        resultFilms = connection.execute(text(f"SELECT movie_id FROM history_movies WHERE history_id = " + history))
 
         if resultFilms.rowcount!=0:
             for film in resultFilms:
                 result[0].append(film._asdict())
 
-        resultSeries = connection.execute(text(f"SELECT series_id FROM history_series WHERE history_id = :history_id"))
+        resultSeries = connection.execute(text(f"SELECT series_id FROM history_series WHERE history_id = " + history))
 
         if resultSeries.rowcount!=0:
             for series in resultSeries:
