@@ -61,75 +61,63 @@ def account():
 @app.route('/watchlist/<int:wathclist_id>/', methods=['GET'])
 @jwt_required
 def watchlist(wathclist_id):
-    with engine.connect() as connection:
+    result = [[], []]
 
-        result = [[], []]
+    resultFilms = connection.execute(text(f"SELECT movie_id FROM wathclist_movies WHERE wathclist_id = :wathclist_id"))
 
-        resultFilms = connection.execute(text(f"SELECT movie_id FROM wathclist_movies WHERE wathclist_id = :wathclist_id"))
+    if resultFilms.rowcount!=0:
+        for film in resultFilms:
+            result[0].append(film._asdict())
 
-        if resultFilms.rowcount!=0:
-            for film in resultFilms:
-                result[0].append(film._asdict())
+    resultSeries = connection.execute(text(f"SELECT series_id FROM wathclist_series WHERE wathclist_id = :wathclist_id"))
 
-        resultSeries = connection.execute(text(f"SELECT series_id FROM wathclist_series WHERE wathclist_id = :wathclist_id"))
+    if resultSeries.rowcount!=0:
+        for series in resultSeries:
+            result[1].append(series._asdict())
 
-        if resultSeries.rowcount!=0:
-            for series in resultSeries:
-                result[1].append(series._asdict())
-
-        return jsonify(result)
-        # Returns the full watchlist in a nice json format, first element of this 2d array is always films, second is always series
+    return jsonify(result)
+    # Returns the full watchlist in a nice json format, first element of this 2d array is always films, second is always series
 
 @app.route('history/<int:history_id>', methods=['GET'])
 @jwt_required
 def history(history):
-    with engine.connect() as connection:
+    result = [[], []]
 
-        result = [[], []]
+    resultFilms = connection.execute(text(f"SELECT movie_id FROM history_movies WHERE history_id = " + history))
 
-        resultFilms = connection.execute(text(f"SELECT movie_id FROM history_movies WHERE history_id = " + history))
+    if resultFilms.rowcount!=0:
+        for film in resultFilms:
+            result[0].append(film._asdict())
 
-        if resultFilms.rowcount!=0:
-            for film in resultFilms:
-                result[0].append(film._asdict())
+    resultSeries = connection.execute(text(f"SELECT series_id FROM history_series WHERE history_id = " + history))
 
-        resultSeries = connection.execute(text(f"SELECT series_id FROM history_series WHERE history_id = " + history))
-
-        if resultSeries.rowcount!=0:
-            for series in resultSeries:
-                result[1].append(series._asdict())
-        
-        return jsonify(result)
-        # Returns full history in the same format as the watchlist function
+    if resultSeries.rowcount!=0:
+        for series in resultSeries:
+            result[1].append(series._asdict())
     
-@app.route('acces_films/<int:film_id>')
+    return jsonify(result)
+    # Returns full history in the same format as the watchlist function
+    
+@app.route('access_films/<int:film_id>', methods=['GET'])
 @jwt_required
 def acces(film_id):
-    with engine.connect() as connection:
-        key = public_keys[kid]
-        profile_id = jwt.decode(token, key)
+    profile_id = get_jwt_identity()
 
-        curent_age = connection.execute(text(f"SELECT age FROM profile WHERE profile_id =" + profile_id))
+    curent_age = connection.execute(text(f"SELECT age FROM profile WHERE profile_id =" + profile_id))
 
-        film_age = connection.execute(text(f"SELECT age_restrictor FROM genre INNER JOIN movie_genre ON film_id WHERE film_id = " + film_id))
+    film_age = connection.execute(text(f"SELECT age_restrictor FROM genre INNER JOIN movie_genre ON film_id WHERE film_id = " + film_id))
 
-        if film_age > curent_age:
-            return False
-        else:
-            return True
+    return film_age<= curent_age
         
-@app.route('acces_series/<int:series_id>')
+@app.route('access_series/<int:series_id>', methods=['GET'])
 @jwt_required
 def acces(series_id):
-    with engine.connect() as connection:
-        key = public_keys[kid]
-        profile_id = jwt.decode(token, key)
+    profile_id = get_jwt_identity()
 
-        curent_age = connection.execute(text(f"SELECT age FROM profile WHERE profile_id =" + profile_id))
+    curent_age = connection.execute(text(f"SELECT age FROM profile WHERE profile_id =" + profile_id))
 
-        series_age = connection.execute(text(f"SELECT age_restrictor FROM genre INNER JOIN series_genre ON series_id WHERE series_id = " + series_id))
+    series_age = connection.execute(text(f"SELECT age_restrictor FROM genre INNER JOIN series_genre ON series_id WHERE series_id = " + series_id))
 
-        if series_age > curent_age:
-            return False
-        else:
-            return True
+    return series_age<=curent_age
+    
+# These 2 functions grant or deny acces to the film or series, depending on the profile age and films restriction
