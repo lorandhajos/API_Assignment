@@ -3,10 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="http://cdn.bokeh.org/bokeh/release/bokeh-3.0.1.min.css" rel="stylesheet" type="text/css">
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-    <h2>Dashboard</h2>
-        <p>Welcome, {{ session['email'] }}!</p>
-        <p>Please <a href="{{ url_for('login') }}">log in</a>.</p>
+<body class="bg-gray-100">
+
+    <div class="container mx-auto">
+        <h1 class="text-center py-4 text-3xl font-bold">Statistics</h1> 
+
+        <div class="flex flex-wrap mb-5">
+            <div class="w-full md:w-1/2 px-4 mb-4 md:mb-0">
+                <h4 class="text-center text-xl font-semibold">Series</h4> 
+                {{ div[0] | safe }}
+                {{ script[0] | safe }}
+            </div> 
+
+            <div class="w-full md:w-1/2 px-4">
+                <h4 class="text-center text-xl font-semibold">Films</h4> 
+                {{ div[1] | safe }}
+                {{ script[1] | safe }}
+            </div>
+        </div>
+
+        <div class="mt-8">
+            <h2 class="text-2xl font-bold">Dashboard</h2>
+            <p class="mb-4">Welcome, {{ session['email'] }}!</p>
+            <p>Please <a href="{{ url_for('login') }}" class="text-blue-500">log in</a>.</p>
+        </div>
+    </div>
+
+</body>
 </html>

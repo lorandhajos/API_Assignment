@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 from werkzeug.security import generate_password_hash, check_password_hash
 from bokeh.embed import components
 from bokeh.plotting import figure
+import random
 
 app = Flask(__name__)
 
@@ -13,6 +14,7 @@ with open("templates/login.html", "r", encoding="utf-8") as f:
 
 @app.route('/favicon.ico')
 def favicon():
+    return ''
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -76,5 +78,3 @@ def dashboard():
         # return f'Welcome to the dashboard, User #{session["user_id"]}!'
     else:
         return redirect(url_for('login'))
-
-return ''

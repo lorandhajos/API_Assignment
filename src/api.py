@@ -5,7 +5,7 @@ import re
 
 from dotenv import dotenv_values
 from flask import Flask, jsonify, request
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required, create_refresh_token, jwt_refresh_token_required, get_jwt_identity
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, create_refresh_token, get_jwt_identity
 from sqlalchemy import create_engine, text
 
 config = dotenv_values("../.env")
@@ -39,7 +39,7 @@ def login():
         return jsonify(access_token=token)
 
 @app.route('/token/refresh', methods=['POST'])
-@jwt_refresh_token_required
+@jwt_required(refresh=True)
 def refresh():
     current_user = get_jwt_identity()
     new_token = generate_token(current_user)
