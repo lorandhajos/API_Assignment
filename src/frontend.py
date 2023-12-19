@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
-from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
+from bokeh.embed import components
+from bokeh.plotting import figure
 
 app = Flask(__name__)
 
@@ -23,7 +24,7 @@ def register():
         if existing_user:
             flash('Username already exists. Please choose a different one.', 'danger')
         else:
-            hashed_password = generate_password_hash(password, method='sha256')
+            hashed_password = generate_password_hash(password, method='sha1')
             new_user = User(username=username, password=hashed_password)
             db.session.add(new_user)
             db.session.commit()
@@ -47,12 +48,32 @@ def login():
         else:
             flash('Login failed. Please check your username and password.', 'danger')
 
-    return render_template('login.html')
+    return render_template('base.html')
 
 @app.route('/dashboard')
 def dashboard():
     if 'user_id' in session:
-        return f'Welcome to the dashboard, User #{session["user_id"]}!'
+        p1 = figure(height=350, sizing_mode="stretch_width") 
+        p1.circle( 
+            [i for i in range(10)], 
+            [random.randint(1, 50) for j in range(10)], 
+            size=20, 
+            color="navy", 
+            alpha=0.5
+        )
+        p2 = figure(height=350, sizing_mode="stretch_width") 
+        p2.circle( 
+            [i for i in range(10)], 
+            [random.randint(1, 50) for j in range(10)], 
+            size=20,
+            color="navy",
+            alpha=0.5
+        )
+
+        script1, div1 = components(p1)
+        script2, div2 = components(p2)
+        return render_template('dashboard.html', script=[script1, script2], div=[div1, div2])
+        # return f'Welcome to the dashboard, User #{session["user_id"]}!'
     else:
         return redirect(url_for('login'))
 
