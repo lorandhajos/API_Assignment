@@ -1,15 +1,18 @@
 import os
 
+from dotenv import dotenv_values
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
 from werkzeug.serving import run_simple
 
 from api import app as api_app
 from frontend import app as frontend_app
 
+config = dotenv_values("../.env")
+
 os.environ['FLASK_ENV'] = 'development'
 
 application = DispatcherMiddleware(frontend_app, {
-    '/api': api_app
+    f'/api/{config["API_VERSION"]}': api_app
 })
 
 if __name__ == '__main__':
