@@ -5,7 +5,6 @@ from apispec.ext.marshmallow import MarshmallowPlugin
 from apispec_webframeworks.flask import FlaskPlugin
 from dotenv import dotenv_values
 from flask import Flask, jsonify, render_template, request
-from flask_cors import CORS
 from flask_jwt_extended import (JWTManager, create_access_token,
                                 create_refresh_token, get_jwt_identity,
                                 jwt_required)
@@ -46,8 +45,6 @@ spec.components.security_scheme("JWT", api_key_scheme)
 app = Flask(__name__)
 app.config['JWT_SECRET_KEY'] = config['JWT_SECRET_KEY']
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
-
-CORS(app)
 
 jwt = JWTManager(app)
 
