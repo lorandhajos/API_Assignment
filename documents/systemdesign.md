@@ -15,16 +15,41 @@ flowchart LR
     fe<-- JSON, XML -->api
 ```
 
+## Backups
+
+For backups we suggest following the 3-2-1 rule.
+
++ Production data (Copy 1, Production server)
++ Backup (Copy 2, GitHub repository)
++ Disaster recovery off site (Copy 3, Cold storage)
+
 ## API
 
 The API will function as a middleman system between the front-end and the database and will satisfy at least the following conditions:
 
-#### Data Handling
-#### Endpoints and Response Handling
-#### Database Interaction
-#### Security and Authentication
-#### External Integration
 #### Framework Choice
+
+Our project team decided to use Flask because a member of our team had some experience with Flask. Additionally, making an API in Python just sounded nice.
+
+#### External Integration
+
+As we are making an Netflix API, we decided that it's only fitting to use a public movie API to display additional information about the movies.
+
+#### Data Handling
+
+Clients using the API have the choice to request JSON or XML data using the ```Accept:``` HTTP header.
+
+#### Endpoints and Response Handling
+
+The comprehensive openapi specifications of the endpoints can be found at ```/api/v1/docs``` when connected to the web server.
+
+#### Database Interaction
+
+The API connects to the database with psycopg using a connection string.
+
+#### Security and Authentication
+
+User password are stored in the database in a hashed and salted format. The user privileges are managed by the database making it harder to access privileged information by accident.
 
 ### Class Diagram
 
@@ -136,9 +161,9 @@ Subscription "*" -- "*" Discount : discounts
 Discount "0..1" -- "2" User : involvesUsers
 ```
 
-### Endpoints
-
 ## Database
+
+We decided to use PostgreSQL for our database because none in our team had any experience with it, wanted to try a relational database other than MySQL, and because it's popular/commonly used.
 
 ### Entity Relationship Diagram (ERD)
 
