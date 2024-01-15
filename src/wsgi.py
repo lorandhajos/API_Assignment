@@ -5,11 +5,13 @@ from werkzeug.serving import run_simple
 
 from api import app as api_app
 from frontend import app as frontend_app
+from swagger.main import app as swagger_app
 
 os.environ['FLASK_ENV'] = 'development'
 
 application = DispatcherMiddleware(frontend_app, {
-    '/api': api_app
+    '/api': api_app,
+    '/swagger': swagger_app
 })
 
 if __name__ == '__main__':
