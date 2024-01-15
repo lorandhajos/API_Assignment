@@ -114,7 +114,7 @@ def access(film_id):
         curent_age = connection.execute(text(f"SELECT getAgeProfile(:profile_id);"),
                                         {"profile_id": profile_id})
 
-        film_age = connection.execute(text(f"SELECT age_restrictor FROM genre INNER JOIN movie_genre ON film_id WHERE film_id = :film_id"),
+        film_age = connection.execute(text(f"SELECT getAgeRestrictor(:film_id)"),
                                       {"film_id": film_id})
 
         return film_age <= curent_age
