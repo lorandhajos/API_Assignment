@@ -1,17 +1,53 @@
 from datetime import timedelta
 
+from apispec import APISpec
+from apispec.ext.marshmallow import MarshmallowPlugin
+from apispec_webframeworks.flask import FlaskPlugin
 from dotenv import dotenv_values
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, render_template, request
+from flask_cors import CORS
 from flask_jwt_extended import (JWTManager, create_access_token,
                                 create_refresh_token, get_jwt_identity,
                                 jwt_required)
+from marshmallow import Schema, fields
 from sqlalchemy import create_engine, text
 
 config = dotenv_values("../.env")
 
+spec = APISpec(
+    title = "Netflix API",
+    version = f"{config['API_VERSION']}.0.0",
+    openapi_version = "3.1.0",
+    plugins = [FlaskPlugin(), MarshmallowPlugin()],
+    info = dict(
+        description="Netflix API",
+    ),
+    servers = [dict(url=f"http://localhost:5000/api/{config['API_VERSION']}")],
+    externalDocs = dict(
+        description="GitHub",
+        url="https://github.com/lorandhajos/API_Assignment",
+    ),
+)
+
+class LoginSchema(Schema):
+    email = fields.Email(required=True)
+    password = fields.String(required=True)
+
+class LoginResponseSchema(Schema):
+    access_token = fields.String(required=True)
+    refresh_token = fields.String(required=True)
+
+class ErrorResponseSchema(Schema):
+    msg = fields.String(required=True)
+
+api_key_scheme = {"type": "http", "scheme": "bearer", "bearerFormat": "JWT"}
+spec.components.security_scheme("JWT", api_key_scheme)
+
 app = Flask(__name__)
 app.config['JWT_SECRET_KEY'] = config['JWT_SECRET_KEY']
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
+
+CORS(app)
 
 jwt = JWTManager(app)
 
@@ -20,10 +56,42 @@ sessions = {}
 def get_db_engine(user, password):
     return create_engine(f"postgresql+psycopg://{user}:{password}@localhost:5432/{config['DB_NAME']}", echo=True)
 
+@app.route('/docs')
+def docs():
+    """
+    Swagger UI endpoint
+    """
+    return render_template('index.html', url=request.base_url.replace('/docs', '/openapi.json'))
+
+@app.route('/openapi.json', methods=['GET'])
+def openapi():
+    """
+    Swagger JSON endpoint
+    """
+    return jsonify(spec.to_dict())
+
 @app.route('/login', methods=['POST'])
 def login():
     """
     Login endpoint
+    ---
+    post:
+        description: Login endpoint
+        requestBody:
+            content:
+                application/json:
+                    schema: LoginSchema
+        responses:
+            200:
+                description: Login successful
+                content:
+                    application/json:
+                        schema: LoginResponseSchema
+            401:
+                description: Bad username or password
+                content:
+                    application/json:
+                        schema: ErrorResponseSchema
     """
     print(request.json)
     engine = get_db_engine(config['DB_USER'], config['DB_PASS'])
@@ -137,4 +205,6 @@ def access(series_id):
                                         {"series_id": series_id})
 
         return series_age <= curent_age
-        
+
+with app.test_request_context():
+    spec.path(view=login)

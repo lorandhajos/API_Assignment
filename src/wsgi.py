@@ -6,7 +6,6 @@ from werkzeug.serving import run_simple
 
 from api import app as api_app
 from frontend import app as frontend_app
-from swagger.main import app as swagger_app
 
 config = dotenv_values("../.env")
 
