@@ -28,7 +28,7 @@ def login():
     print(request.json)
     engine = get_db_engine(config['DB_USER'], config['DB_PASS'])
     with engine.connect() as connection:
-        result = connection.execute(text(f"SELECT account_id FROM account WHERE email = :email AND password = :password"),
+        result = connection.execute(text(f"SELECT login(:email, :password)"),
                                     {"email": request.json.get('email'), "password": request.json.get('password')})
         if result.rowcount == 0:
             return jsonify({"msg": "Bad username or password"}), 401
@@ -114,7 +114,7 @@ def access(film_id):
         curent_age = connection.execute(text(f"SELECT getAgeProfile(:profile_id);"),
                                         {"profile_id": profile_id})
 
-        film_age = connection.execute(text(f"SELECT getAgeRestrictor(:film_id)"),
+        film_age = connection.execute(text(f"SELECT getAgeRestrictorFilms(:film_id)"),
                                       {"film_id": film_id})
 
         return film_age <= curent_age
@@ -130,10 +130,11 @@ def access(series_id):
     with sessions[user_id].connect() as connection:
         profile_id = get_jwt_identity()
 
-        curent_age = connection.execute(text(f"SELECT getAgeProfile(:profile_id);"),
+        curent_age = connection.execute(text(f"SELECT getAgeProfile(:profile_id)"),
                                         {"profile_id": profile_id})
 
-        series_age = connection.execute(text(f"SELECT age_restrictor FROM genre INNER JOIN series_genre ON series_id WHERE series_id = :series_id"),
+        series_age = connection.execute(text(f"SELECT getAgeRestrictorSeries(:series_id);"),
                                         {"series_id": series_id})
 
         return series_age <= curent_age
+        
