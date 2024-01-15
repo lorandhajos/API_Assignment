@@ -62,14 +62,14 @@ def watchlist(watchlist_id):
     with sessions[user_id].connect() as connection:
         result = [[], []]
 
-        resultFilms = connection.execute(text(f"SELECT movie_id FROM watchlist_movies WHERE watchlist_id = :watchlist_id"),
+        resultFilms = connection.execute(text(f"SELECT getWatchlistFilmsForID(:watchlist_id);"),
                                          {"watchlist_id": watchlist_id})
 
         if resultFilms.rowcount != 0:
             for film in resultFilms:
                 result[0].append(film._asdict())
 
-        resultSeries = connection.execute(text(f"SELECT series_id FROM watchlist_series WHERE watchlist_id = :watchlist_id"),
+        resultSeries = connection.execute(text(f"SELECT getWatchlistSeriesForID(:watchlist_id);"),
                                           {"watchlist_id": watchlist_id})
 
         if resultSeries.rowcount != 0:
@@ -88,14 +88,14 @@ def history(history):
     with sessions[user_id].connect() as connection:
         result = [[], []]
 
-        resultFilms = connection.execute(text(f"SELECT movie_id FROM history_movies WHERE history_id = :history_id"),
+        resultFilms = connection.execute(text(f"SELECT getHistoryMoviesForID(:history_id);"),
                                          {"history_id": history})
 
         if resultFilms.rowcount != 0:
             for film in resultFilms:
                 result[0].append(film._asdict())
 
-        resultSeries = connection.execute(text(f"SELECT series_id FROM history_series WHERE history_id = :history_id"),
+        resultSeries = connection.execute(text(f"SELECT getHistorySeriesForID(:history_id);"),
                                             {"history_id": history})
 
         if resultSeries.rowcount != 0:
@@ -111,7 +111,7 @@ def access(film_id):
     with sessions[user_id].connect() as connection:
         profile_id = get_jwt_identity()
 
-        curent_age = connection.execute(text(f"SELECT age FROM profile WHERE profile_id = :profile_id"),
+        curent_age = connection.execute(text(f"SELECT getAgeProfile(:profile_id);"),
                                         {"profile_id": profile_id})
 
         film_age = connection.execute(text(f"SELECT age_restrictor FROM genre INNER JOIN movie_genre ON film_id WHERE film_id = :film_id"),
@@ -130,7 +130,7 @@ def access(series_id):
     with sessions[user_id].connect() as connection:
         profile_id = get_jwt_identity()
 
-        curent_age = connection.execute(text(f"SELECT age FROM profile WHERE profile_id = :profile_id"),
+        curent_age = connection.execute(text(f"SELECT getAgeProfile(:profile_id);"),
                                         {"profile_id": profile_id})
 
         series_age = connection.execute(text(f"SELECT age_restrictor FROM genre INNER JOIN series_genre ON series_id WHERE series_id = :series_id"),
