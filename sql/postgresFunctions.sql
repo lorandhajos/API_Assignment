@@ -46,7 +46,6 @@ $$
 $$
 LANGUAGE plpgsql;
 
-
 CREATE OR REPLACE FUNCTION getAgeRestrictorFilms(filmID int)
 RETURNS TABLE(ageRestrictor integer) AS
 $$
