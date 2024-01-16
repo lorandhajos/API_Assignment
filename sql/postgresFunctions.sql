@@ -46,7 +46,6 @@ $$
 $$
 LANGUAGE plpgsql;
 
-
 CREATE OR REPLACE FUNCTION getAgeRestrictorFilms(filmID int)
 RETURNS TABLE(ageRestrictor integer) AS
 $$
@@ -66,11 +65,11 @@ $$
 $$
 LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION login(Email varchar(255), Password varchar(255))
+CREATE OR REPLACE FUNCTION login(e_email VARCHAR, p_password VARCHAR)
 RETURNS TABLE(accountID integer) AS
 $$
    BEGIN
-     RETURN QUERY SELECT account_id FROM account WHERE email = Email AND password = Password;
+     RETURN QUERY SELECT account.account_id FROM account WHERE email = e_email AND password = p_password;
    END;
 $$
 LANGUAGE plpgsql;
