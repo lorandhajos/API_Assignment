@@ -73,3 +73,30 @@ $$
    END;
 $$
 LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION getMovieViews()
+RETURNS TABLE(views integer, title VARCHAR) AS
+$$
+   BEGIN
+     RETURN QUERY SELECT movie.views, movie.title FROM movie;
+   END;
+$$
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION getSeriesViews()
+RETURNS TABLE(views integer, title VARCHAR) AS
+$$
+   BEGIN
+     RETURN QUERY SELECT series.views, series.title FROM series;
+   END;
+$$
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION getProfileCountry()
+RETURNS TABLE(country VARCHAR, count integer) AS
+$$
+   BEGIN
+     RETURN QUERY SELECT profile.country, COUNT(profile.country)::int FROM profile GROUP BY profile.country;
+   END;
+$$
+LANGUAGE plpgsql;
