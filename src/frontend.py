@@ -1,13 +1,14 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from bokeh.embed import components
 from bokeh.plotting import figure
 import random
+import requests
 
 app = Flask(__name__)
 
-with open("templates/login.html", "r", encoding="utf-8") as f:
-    login = f.read()
+# with open("templates/login.html", "r", encoding="utf-8") as f:
+#     login = f.read()
 # app.config['SECRET_KEY'] = ''  # put here JWT secret key
 # app.config['postgresql.sql'] = 'postgresql://postgres:example@localhost/postgres'
 # db = SQLAlchemy(app)
@@ -38,17 +39,12 @@ def register():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form['username']
+        email = request.form['email']
         password = request.form['password']
+        # additional checks for the username and password
 
-        user = User.query.filter_by(username=username).first()
-
-        if user and check_password_hash(user.password, password):
-            session['user_id'] = user.id
-            flash('Login successful!', 'success')
-            return redirect(url_for('dashboard'))
-        else:
-            flash('Login failed. Please check your username and password.', 'danger')
+        token = requests.post("http://localhost:5000/api/v1/login", json={"email": email, "password": password})
+        return jsonify(token.json())
 
     return render_template('base.html')
 
