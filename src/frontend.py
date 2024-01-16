@@ -3,6 +3,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from bokeh.embed import components
 from bokeh.plotting import figure
 import random
+import threading
 import requests
 
 app = Flask(__name__)
@@ -12,6 +13,13 @@ app = Flask(__name__)
 # app.config['SECRET_KEY'] = ''  # put here JWT secret key
 # app.config['postgresql.sql'] = 'postgresql://postgres:example@localhost/postgres'
 # db = SQLAlchemy(app)
+
+def make_request(data):
+    try:
+        token = requests.post("http://localhost:5000/api/v1/login", json=data)
+        print(token.text)
+    except Exception as e:
+        print(f"Error during POST request: {e}")
 
 @app.route('/favicon.ico')
 def favicon():
@@ -42,9 +50,10 @@ def login():
         email = request.form['email']
         password = request.form['password']
         # additional checks for the username and password
-
-        token = requests.post("http://localhost:5000/api/v1/login", json={"email": email, "password": password})
-        return jsonify(token.json())
+        if(email == '' or password == ''):
+            flash('Please fill out the form!', 'danger')
+            return redirect(url_for('login'))
+        threading.Thread(target=make_request, args=({"email": email, "password": password},)).start()
 
     return render_template('base.html')
 
