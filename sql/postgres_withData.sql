@@ -2,7 +2,7 @@
 
 DROP TABLE IF EXISTS "account";
 DROP SEQUENCE IF EXISTS account_account_id_seq;
-CREATE SEQUENCE account_account_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 START 3 CACHE 1;
+CREATE SEQUENCE account_account_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1;
 
 CREATE TABLE "public"."account" (
     "account_id" integer DEFAULT nextval('account_account_id_seq') NOT NULL,
@@ -17,13 +17,13 @@ CREATE TABLE "public"."account" (
 ) WITH (oids = false);
 
 INSERT INTO "account" ("account_id", "email", "password", "payment_method", "blocked", "login_attempts", "last_login", "subscription_id") VALUES
-(1,	'email.email@test.com',	'8cb2237d0679ca88db6464eac60da96345513964',	'Visa',	'f',	0,	'2023-12-11',	1),
 (2,	'test.eamil@tetst.com',	'7c4a8d09ca3762af61e59520943dc26494f8941b',	'MasterCard',	'f',	0,	'2023-12-11',	2),
-(3,	'email@test.com',	'20eabe5d64b0e216796e834f52d61fd0b70332fc',	'iDeal',	'f',	0,	'2023-12-11',	3);
+(3,	'email@test.com',	'20eabe5d64b0e216796e834f52d61fd0b70332fc',	'iDeal',	'f',	0,	'2023-12-11',	3),
+(1,	'email.email@test.com',	'8cb2237d0679ca88db6464eac60da96345513964',	'Visa',	'f',	0,	'2023-12-11',	1);
 
 DROP TABLE IF EXISTS "episode";
 DROP SEQUENCE IF EXISTS episode_episode_id_seq;
-CREATE SEQUENCE episode_episode_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 START 6 CACHE 1;
+CREATE SEQUENCE episode_episode_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1;
 
 CREATE TABLE "public"."episode" (
     "episode_id" integer DEFAULT nextval('episode_episode_id_seq') NOT NULL,
@@ -44,24 +44,24 @@ INSERT INTO "episode" ("episode_id", "title", "duration", "season_number", "seri
 
 DROP TABLE IF EXISTS "genre";
 DROP SEQUENCE IF EXISTS genre_genre_id_seq;
-CREATE SEQUENCE genre_genre_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 START 4 CACHE 1;
+CREATE SEQUENCE genre_genre_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1;
 
 CREATE TABLE "public"."genre" (
     "genre_id" integer DEFAULT nextval('genre_genre_id_seq') NOT NULL,
     "name" character varying(255) NOT NULL,
-    "age_restriction" character varying(255) NOT NULL,
+    "age_restriction" integer NOT NULL,
     CONSTRAINT "genre_pkey" PRIMARY KEY ("genre_id")
 ) WITH (oids = false);
 
 INSERT INTO "genre" ("genre_id", "name", "age_restriction") VALUES
-(1,	'Horror',	'18'),
-(2,	'Comedy',	'0'),
-(3,	'Action',	'13'),
-(4,	'Adventure',	'8');
+(1,	'Horror',	18),
+(2,	'Comedy',	0),
+(3,	'Action',	13),
+(4,	'Adventure',	8);
 
 DROP TABLE IF EXISTS "history";
 DROP SEQUENCE IF EXISTS history_history_id_seq;
-CREATE SEQUENCE history_history_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 START 3 CACHE 1;
+CREATE SEQUENCE history_history_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1;
 
 CREATE TABLE "public"."history" (
     "history_id" integer DEFAULT nextval('history_history_id_seq') NOT NULL,
@@ -75,7 +75,7 @@ INSERT INTO "history" ("history_id") VALUES
 
 DROP TABLE IF EXISTS "history_movies";
 DROP SEQUENCE IF EXISTS history_movies_history_movies_id_seq;
-CREATE SEQUENCE history_movies_history_movies_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 START 3 CACHE 1;
+CREATE SEQUENCE history_movies_history_movies_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1;
 
 CREATE TABLE "public"."history_movies" (
     "history_movies_id" integer DEFAULT nextval('history_movies_history_movies_id_seq') NOT NULL,
@@ -91,7 +91,7 @@ INSERT INTO "history_movies" ("history_movies_id", "history_id", "movie_id") VAL
 
 DROP TABLE IF EXISTS "history_series";
 DROP SEQUENCE IF EXISTS history_series_history_series_id_seq;
-CREATE SEQUENCE history_series_history_series_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 START 3 CACHE 1;
+CREATE SEQUENCE history_series_history_series_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1;
 
 CREATE TABLE "public"."history_series" (
     "history_series_id" integer DEFAULT nextval('history_series_history_series_id_seq') NOT NULL,
@@ -122,7 +122,7 @@ INSERT INTO "interests" ("profile_id", "genre_id") VALUES
 
 DROP TABLE IF EXISTS "movie";
 DROP SEQUENCE IF EXISTS movie_movie_id_seq;
-CREATE SEQUENCE movie_movie_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 START 3 CACHE 1;
+CREATE SEQUENCE movie_movie_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1;
 
 CREATE TABLE "public"."movie" (
     "movie_id" integer DEFAULT nextval('movie_movie_id_seq') NOT NULL,
@@ -149,7 +149,7 @@ INSERT INTO "movie_genre" ("movie_id", "genre_id") VALUES
 
 DROP TABLE IF EXISTS "profile";
 DROP SEQUENCE IF EXISTS profile_profile_id_seq;
-CREATE SEQUENCE profile_profile_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 START 3 CACHE 1;
+CREATE SEQUENCE profile_profile_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1;
 
 CREATE TABLE "public"."profile" (
     "profile_id" integer DEFAULT nextval('profile_profile_id_seq') NOT NULL,
@@ -170,7 +170,7 @@ INSERT INTO "profile" ("profile_id", "account_id", "profile_image", "profile_chi
 
 DROP TABLE IF EXISTS "series";
 DROP SEQUENCE IF EXISTS series_series_id_seq;
-CREATE SEQUENCE series_series_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 START 3 CACHE 1;
+CREATE SEQUENCE series_series_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1;
 
 CREATE TABLE "public"."series" (
     "series_id" integer DEFAULT nextval('series_series_id_seq') NOT NULL,
@@ -212,7 +212,7 @@ INSERT INTO "subscription" ("subscription_id", "description", "subscription_pric
 
 DROP TABLE IF EXISTS "watchlist";
 DROP SEQUENCE IF EXISTS watchlist_watchlist_id_seq;
-CREATE SEQUENCE watchlist_watchlist_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 START 4 CACHE 1;
+CREATE SEQUENCE watchlist_watchlist_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1;
 
 CREATE TABLE "public"."watchlist" (
     "watchlist_id" integer DEFAULT nextval('watchlist_watchlist_id_seq') NOT NULL,
@@ -227,7 +227,7 @@ INSERT INTO "watchlist" ("watchlist_id") VALUES
 
 DROP TABLE IF EXISTS "watchlist_movies";
 DROP SEQUENCE IF EXISTS watchlist_movies_watchlist_movies_id_seq;
-CREATE SEQUENCE watchlist_movies_watchlist_movies_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 START 3 CACHE 1;
+CREATE SEQUENCE watchlist_movies_watchlist_movies_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1;
 
 CREATE TABLE "public"."watchlist_movies" (
     "watchlist_movies_id" integer DEFAULT nextval('watchlist_movies_watchlist_movies_id_seq') NOT NULL,
@@ -243,7 +243,7 @@ INSERT INTO "watchlist_movies" ("watchlist_movies_id", "watchlist_id", "movie_id
 
 DROP TABLE IF EXISTS "watchlist_series";
 DROP SEQUENCE IF EXISTS watchlist_series_watchlist_series_id_seq;
-CREATE SEQUENCE watchlist_series_watchlist_series_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 START 2 CACHE 1;
+CREATE SEQUENCE watchlist_series_watchlist_series_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1;
 
 CREATE TABLE "public"."watchlist_series" (
     "watchlist_series_id" integer DEFAULT nextval('watchlist_series_watchlist_series_id_seq') NOT NULL,
@@ -284,4 +284,4 @@ ALTER TABLE ONLY "public"."watchlist_movies" ADD CONSTRAINT "fk_watchlist" FOREI
 ALTER TABLE ONLY "public"."watchlist_series" ADD CONSTRAINT "fk_series" FOREIGN KEY (series_id) REFERENCES series(series_id) NOT DEFERRABLE;
 ALTER TABLE ONLY "public"."watchlist_series" ADD CONSTRAINT "fk_watchlist" FOREIGN KEY (watchlist_id) REFERENCES watchlist(watchlist_id) NOT DEFERRABLE;
 
--- 2023-12-11 11:37:44.299315+00
+-- 2024-01-16 10:04:01.577621+00
