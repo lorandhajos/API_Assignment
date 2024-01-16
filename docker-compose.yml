@@ -12,7 +12,7 @@ services:
 
   api:
     build: ./src
-    command: gunicorn --bind 0.0.0.0:5000 wsgi:application
+    command: gunicorn --bind 0.0.0.0:5000 -w 4 wsgi:application
     volumes:
       - ./src:/usr/src/app
     expose:

@@ -8,18 +8,13 @@ import requests
 
 app = Flask(__name__)
 
+app.config['SECRET_KEY'] = "secret"
+
 # with open("templates/login.html", "r", encoding="utf-8") as f:
 #     login = f.read()
 # app.config['SECRET_KEY'] = ''  # put here JWT secret key
 # app.config['postgresql.sql'] = 'postgresql://postgres:example@localhost/postgres'
 # db = SQLAlchemy(app)
-
-def make_request(data):
-    try:
-        token = requests.post("http://localhost:5000/api/v1/login", json=data)
-        print(token.text)
-    except Exception as e:
-        print(f"Error during POST request: {e}")
 
 @app.route('/favicon.ico')
 def favicon():
@@ -53,15 +48,22 @@ def login():
         if(email == '' or password == ''):
             flash('Please fill out the form!', 'danger')
             return redirect(url_for('login'))
-        threading.Thread(target=make_request, args=({"email": email, "password": password},)).start()
+        req = requests.post("http://localhost:5000/api/v1/login", json={"email": email, "password": password})
+        if req.status_code == 200:
+            session['access_token'] = req.json()['access_token']
+            session['refresh_token'] = req.json()['refresh_token']
+            print(req.json())
+    
+    if 'access_token' in session:
+        return redirect(url_for('dashboard'))
 
     return render_template('base.html')
 
 @app.route('/dashboard')
 def dashboard():
-    if 'user_id' in session:
+    if 'access_token' in session:
         p1 = figure(height=350, sizing_mode="stretch_width") 
-        p1.circle( 
+        p1.circle(
             [i for i in range(10)], 
             [random.randint(1, 50) for j in range(10)], 
             size=20, 
