@@ -2,6 +2,7 @@ import os
 from datetime import timedelta
 
 from apispec import APISpec
+from dotenv import load_dotenv
 from apispec.ext.marshmallow import MarshmallowPlugin
 from apispec_webframeworks.flask import FlaskPlugin
 from flask import Flask, jsonify, render_template, request
@@ -10,6 +11,9 @@ from flask_jwt_extended import (JWTManager, create_access_token,
                                 jwt_required)
 from marshmallow import Schema, fields
 from sqlalchemy import create_engine, text
+
+if os.environ.get('FLASK_ENV') == 'development':
+    load_dotenv("../.env")
 
 spec = APISpec(
     title = "Netflix API",
@@ -37,6 +41,10 @@ class LoginResponseSchema(Schema):
 class ErrorResponseSchema(Schema):
     msg = fields.String(required=True)
 
+class WatchlistSchema(Schema):
+    film = fields.List(fields.Integer(), required=True)
+    series = fields.List(fields.Integer(), required=True)
+
 api_key_scheme = {"type": "http", "scheme": "bearer", "bearerFormat": "JWT"}
 spec.components.security_scheme("JWT", api_key_scheme)
 
@@ -49,7 +57,7 @@ jwt = JWTManager(app)
 sessions = {}
 
 def get_db_engine(user, password):
-    if os.environ['FLASK_ENV'] == 'development':
+    if os.environ.get('FLASK_ENV') == 'development':
         return create_engine(f"postgresql+psycopg://{user}:{password}@localhost:5432/{os.environ['DB_NAME']}", echo=True)
     else:
         return create_engine(f"postgresql+psycopg://{user}:{password}@db:5432/{os.environ['DB_NAME']}", echo=True)
@@ -112,17 +120,46 @@ def login():
 def refresh():
     """
     Token refresh endpoint
+    ---
+    post:
+        description: Token refresh endpoint
+        security:
+            - JWT: []
+        responses:
+            200:
+                description: Token refresh successful
+                content:
+                    application/json:
+                        schema: LoginResponseSchema
     """
     current_user = get_jwt_identity()
     new_token = create_access_token(identity=current_user)
 
     return jsonify(access_token=new_token)
 
-@app.route('/watchlist/<int:watchlist_id>/', methods=['GET'])
-@jwt_required
+@app.route('/watchlist/<int:watchlist_id>', methods=['GET'])
+@jwt_required(optional=False)
 def watchlist(watchlist_id):
     """
     Returns the watchlist
+    ---
+    get:
+        description: Returns the watchlist
+        security:
+            - JWT: []
+        parameters:
+            - in: path
+              name: watchlist_id
+              schema:
+                type: integer
+              required: true
+              description: The watchlist ID
+        responses:
+            200:
+                description: Watchlist returned
+                content:
+                    application/json:
+                        schema: WatchlistSchema
     """
     user_id = get_jwt_identity()
     with sessions[user_id].connect() as connection:
@@ -142,13 +179,31 @@ def watchlist(watchlist_id):
             for series in resultSeries:
                 result[1].append(series._asdict())
 
-        return jsonify(result)
+        return WatchlistSchema().dump(result)
 
-@app.route('/history/<int:history_id>', endpoint='history', methods=['GET'])
-@jwt_required
+@app.route('/history/<int:history_id>', endpoint="history", methods=['GET'])
+@jwt_required(optional=False)
 def history(history):
     """
     Returns full history in the same format as the watchlist function
+    ---
+    get:
+        description: Returns full history in the same format as the watchlist function
+        security:
+            - JWT: []
+        parameters:
+            - in: path
+              name: history_id
+              schema:
+                type: integer
+              required: true
+              description: The history ID
+        responses:
+            200:
+                description: History returned
+                content:
+                    application/json:
+                        schema: WatchlistSchema
     """
     user_id = get_jwt_identity()
     with sessions[user_id].connect() as connection:
@@ -170,9 +225,36 @@ def history(history):
 
         return jsonify(result)
 
-@app.route('/access_films/<int:film_id>', endpoint='access_films', methods=['GET'])
-@jwt_required
-def access(film_id):
+@app.route('/access_films/<int:film_id>', endpoint="access_films", methods=['GET'])
+@jwt_required(optional=False)
+def access_films(film_id):
+    """
+    These 2 functions grant or deny access to the film or series,
+    depending on the profile age and films restriction
+    ---
+    get:
+        description: These 2 functions grant or deny access to the film or series, depending on the profile age and films restriction
+        security:
+            - JWT: []
+        parameters:
+            - in: path
+              name: film_id
+              schema:
+                type: integer
+              required: true
+              description: The film ID
+        responses:
+            200:
+                description: Access granted
+                content:
+                    application/json:
+                        schema: WatchlistSchema
+            401:
+                description: Access denied
+                content:
+                    application/json:
+                        schema: ErrorResponseSchema
+    """
     user_id = get_jwt_identity()
     with sessions[user_id].connect() as connection:
         profile_id = get_jwt_identity()
@@ -183,31 +265,64 @@ def access(film_id):
         film_age = connection.execute(text(f"SELECT getAgeRestrictorFilms(:film_id)"),
                                       {"film_id": film_id})
 
-        return film_age <= curent_age
+        return jsonify(film_age <= curent_age)
 
 @app.route('/access_series/<int:series_id>', endpoint="access_series", methods=['GET'])
-@jwt_required
-def access(series_id):
+@jwt_required(optional=False)
+def access_series(series_id):
     """
-    These 2 functions grant or deny acces to the film or series,
+    These 2 functions grant or deny access to the film or series,
     depending on the profile age and films restriction
+    ---
+    get:
+        description: These 2 functions grant or deny access to the film or series, depending on the profile age and films restriction
+        security:
+            - JWT: []
+        parameters:
+            - in: path
+              name: series_id
+              schema:
+                type: integer
+              required: true
+              description: The series ID
+        responses:
+            200:
+                description: Access granted
+                content:
+                    application/json:
+                        schema: WatchlistSchema
+            401:
+                description: Access denied
+                content:
+                    application/json:
+                        schema: ErrorResponseSchema
     """
     user_id = get_jwt_identity()
     with sessions[user_id].connect() as connection:
-
         curent_age = connection.execute(text(f"SELECT getAgeProfile(:profile_id)"),
-                                        {"profile_id": profile_id})
+                                        {"profile_id": user_id})
 
         series_age = connection.execute(text(f"SELECT getAgeRestrictorSeries(:series_id);"),
                                         {"series_id": series_id})
 
-        return series_age <= curent_age
+        return jsonify(series_age <= curent_age)
 
-@app.route('/viewsReportFilms', endpoint='viewsReport', methods=['GET'])
-@jwt_required
-def viewsReport():
+@app.route('/views_report_films', endpoint='views_report_films', methods=['GET'])
+@jwt_required(optional=False)
+def views_report_films():
     """
     These 2 functions fetch a total view count with the name
+    ---
+    get:
+        description: These 2 functions fetch a total view count with the name
+        security:
+            - JWT: []
+        responses:
+            200:
+                description: Total view count returned
+                content:
+                    application/json:
+                        schema: WatchlistSchema
     """
     user_id = get_jwt_identity()
     with sessions[user_id].connect() as connection:
@@ -216,21 +331,45 @@ def viewsReport():
 
     return jsonify(totalViewCount)
 
-@app.route('/viewsReportSeries', endpoint='viewsReport', methods=['GET'])
-@jwt_required
-def viewsReport():
+@app.route('/views_report_series', endpoint='views_report_series', methods=['GET'])
+@jwt_required(optional=False)
+def views_report_series():
+    """
+    These 2 functions fetch a total view count with the name
+    ---
+    get:
+        description: These 2 functions fetch a total view count with the name
+        security:
+            - JWT: []
+        responses:
+            200:
+                description: Total view count returned
+                content:
+                    application/json:
+                        schema: WatchlistSchema
+    """
     user_id = get_jwt_identity()
     with sessions[user_id].connect() as connection:
-
         totalViewCount = connection.execute(text(f"SELECT getSeriesViews()"))
 
     return jsonify(totalViewCount)
 
-@app.route('/countryReport', endpoint='countryReport', methods=['GET'])
-@jwt_required
-def countryReport():
+@app.route('/country_report', endpoint='country_report', methods=['GET'])
+@jwt_required(optional=False)
+def country_report():
     """
-    This is the function which returns the total count of 
+    This is the function which returns the total count of the countries
+    ---
+    get:
+        description: This is the function which returns the total count of the countries
+        security:
+            - JWT: []
+        responses:
+            200:
+                description: Total count of the countries returned
+                content:
+                    application/json:
+                        schema: WatchlistSchema
     """
     user_id = get_jwt_identity()
     with sessions[user_id].connect() as connection:
@@ -241,3 +380,11 @@ def countryReport():
 
 with app.test_request_context():
     spec.path(view=login)
+    spec.path(view=refresh)
+    spec.path(view=watchlist)
+    spec.path(view=history)
+    spec.path(view=access_films)
+    spec.path(view=access_series)
+    spec.path(view=views_report_films)
+    spec.path(view=views_report_series)
+    spec.path(view=country_report)
