@@ -2,13 +2,14 @@ import os
 from datetime import timedelta
 
 from apispec import APISpec
-from dotenv import load_dotenv
 from apispec.ext.marshmallow import MarshmallowPlugin
 from apispec_webframeworks.flask import FlaskPlugin
-from flask import Flask, jsonify, render_template, request
+from dotenv import load_dotenv
+from flask import Flask, jsonify, render_template, request, session
 from flask_jwt_extended import (JWTManager, create_access_token,
                                 create_refresh_token, get_jwt_identity,
                                 jwt_required)
+from flask_session import Session
 from marshmallow import Schema, fields
 from sqlalchemy import create_engine, text
 
@@ -31,7 +32,7 @@ spec = APISpec(
 )
 
 class LoginSchema(Schema):
-    email = fields.Email(required=True)
+    username = fields.String(required=True)
     password = fields.String(required=True)
 
 class LoginResponseSchema(Schema):
@@ -51,10 +52,11 @@ spec.components.security_scheme("JWT", api_key_scheme)
 app = Flask(__name__)
 app.config['JWT_SECRET_KEY'] = os.environ['JWT_SECRET_KEY']
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
+app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_TYPE"] = "filesystem"
 
 jwt = JWTManager(app)
-
-sessions = {}
+Session(app)
 
 def get_db_engine(user, password):
     if os.environ.get('FLASK_ENV') == 'development':
@@ -99,21 +101,20 @@ def login():
                     application/json:
                         schema: ErrorResponseSchema
     """
-    print(request.json)
-    engine = get_db_engine(os.environ['DB_USER'], os.environ['DB_PASS'])
-    with engine.connect() as connection:
-        result = connection.execute(text(f"SELECT login(:email, :password)"),
-                                    {"email": request.json.get('email'), "password": request.json.get('password')})
-        if result.rowcount == 0:
-            return jsonify({"msg": "Bad username or password"}), 401
+    try:
+        username = request.json.get('username')
+        password = request.json.get('password')
+        engine = get_db_engine(username, password)
+        engine.connect()
+    except Exception as e:
+        return jsonify({"msg": "Bad username or password"}), 401
 
-        user_id = result.first()._asdict().get('id')
-        access_token = create_access_token(identity=user_id)
-        refresh_token = create_refresh_token(identity=user_id)
+    access_token = create_access_token(identity=username)
+    refresh_token = create_refresh_token(identity=username)
 
-        #sessions[user_id] = get_db_engine(request.json.get('email'), request.json.get('password'))
+    session[username] = password
 
-        return jsonify(access_token=access_token, refresh_token=refresh_token)
+    return jsonify(access_token=access_token, refresh_token=refresh_token)
 
 @app.route('/token/refresh', methods=['POST'])
 @jwt_required(refresh=True)
@@ -162,7 +163,8 @@ def watchlist(watchlist_id):
                         schema: WatchlistSchema
     """
     user_id = get_jwt_identity()
-    with sessions[user_id].connect() as connection:
+    engine = get_db_engine(user_id, session[user_id])
+    with engine.connect() as connection:
         result = [[], []]
 
         resultFilms = connection.execute(text(f"SELECT getWatchlistFilmsForID(:watchlist_id);"),
@@ -179,11 +181,11 @@ def watchlist(watchlist_id):
             for series in resultSeries:
                 result[1].append(series._asdict())
 
-        return WatchlistSchema().dump(result)
+        return jsonify(result)
 
 @app.route('/history/<int:history_id>', endpoint="history", methods=['GET'])
 @jwt_required(optional=False)
-def history(history):
+def history(history_id):
     """
     Returns full history in the same format as the watchlist function
     ---
@@ -206,18 +208,19 @@ def history(history):
                         schema: WatchlistSchema
     """
     user_id = get_jwt_identity()
-    with sessions[user_id].connect() as connection:
+    engine = get_db_engine(user_id, session[user_id])
+    with engine.connect() as connection:
         result = [[], []]
 
         resultFilms = connection.execute(text(f"SELECT getHistoryMoviesForID(:history_id);"),
-                                         {"history_id": history})
+                                         {"history_id": history_id})
 
         if resultFilms.rowcount != 0:
             for film in resultFilms:
                 result[0].append(film._asdict())
 
         resultSeries = connection.execute(text(f"SELECT getHistorySeriesForID(:history_id);"),
-                                            {"history_id": history})
+                                            {"history_id": history_id})
 
         if resultSeries.rowcount != 0:
             for series in resultSeries:
@@ -225,9 +228,9 @@ def history(history):
 
         return jsonify(result)
 
-@app.route('/access_films/<int:film_id>', endpoint="access_films", methods=['GET'])
+@app.route('/access_films/<int:profile_id>/<int:film_id>', endpoint="access_films", methods=['GET'])
 @jwt_required(optional=False)
-def access_films(film_id):
+def access_films(profile_id, film_id):
     """
     These 2 functions grant or deny access to the film or series,
     depending on the profile age and films restriction
@@ -237,6 +240,12 @@ def access_films(film_id):
         security:
             - JWT: []
         parameters:
+            - in: path
+              name: profile_id
+              schema:
+                type: integer
+              required: true
+              description: The user ID
             - in: path
               name: film_id
               schema:
@@ -255,21 +264,20 @@ def access_films(film_id):
                     application/json:
                         schema: ErrorResponseSchema
     """
-    user_id = get_jwt_identity()
-    with sessions[user_id].connect() as connection:
-        profile_id = get_jwt_identity()
-
+    username = get_jwt_identity()
+    engine = get_db_engine(username, session[username])
+    with engine.connect() as connection:
         curent_age = connection.execute(text(f"SELECT getAgeProfile(:profile_id);"),
-                                        {"profile_id": profile_id})
+                                        {"profile_id": profile_id}).first()[0]
 
         film_age = connection.execute(text(f"SELECT getAgeRestrictorFilms(:film_id)"),
-                                      {"film_id": film_id})
+                                      {"film_id": film_id}).first()[0]
 
         return jsonify(film_age <= curent_age)
 
-@app.route('/access_series/<int:series_id>', endpoint="access_series", methods=['GET'])
+@app.route('/access_series/<int:profile_id>/<int:series_id>', endpoint="access_series", methods=['GET'])
 @jwt_required(optional=False)
-def access_series(series_id):
+def access_series(profile_id, series_id):
     """
     These 2 functions grant or deny access to the film or series,
     depending on the profile age and films restriction
@@ -279,6 +287,12 @@ def access_series(series_id):
         security:
             - JWT: []
         parameters:
+            - in: path
+              name: profile_id
+              schema:
+                type: integer
+              required: true
+              description: The user ID
             - in: path
               name: series_id
               schema:
@@ -297,13 +311,14 @@ def access_series(series_id):
                     application/json:
                         schema: ErrorResponseSchema
     """
-    user_id = get_jwt_identity()
-    with sessions[user_id].connect() as connection:
+    username = get_jwt_identity()
+    engine = get_db_engine(username, session[username])
+    with engine.connect() as connection:
         curent_age = connection.execute(text(f"SELECT getAgeProfile(:profile_id)"),
-                                        {"profile_id": user_id})
+                                        {"profile_id": profile_id}).first()[0]
 
         series_age = connection.execute(text(f"SELECT getAgeRestrictorSeries(:series_id);"),
-                                        {"series_id": series_id})
+                                        {"series_id": series_id}).first()[0]
 
         return jsonify(series_age <= curent_age)
 
@@ -325,9 +340,11 @@ def views_report_films():
                         schema: WatchlistSchema
     """
     user_id = get_jwt_identity()
-    with sessions[user_id].connect() as connection:
+    engine = get_db_engine(user_id, session[user_id])
+    with engine.connect() as connection:
+        result = connection.execute(text(f"SELECT getMovieViews()")).all()
 
-        totalViewCount = connection.execute(text(f"SELECT getMovieViews()"))
+    totalViewCount = [dict(row) for row in result]
 
     return jsonify(totalViewCount)
 
@@ -349,8 +366,11 @@ def views_report_series():
                         schema: WatchlistSchema
     """
     user_id = get_jwt_identity()
-    with sessions[user_id].connect() as connection:
-        totalViewCount = connection.execute(text(f"SELECT getSeriesViews()"))
+    engine = get_db_engine(user_id, session[user_id])
+    with engine.connect() as connection:
+        result = connection.execute(text(f"SELECT getSeriesViews()")).all()
+
+    totalViewCount = [dict(row) for row in result]
 
     return jsonify(totalViewCount)
 
@@ -372,9 +392,11 @@ def country_report():
                         schema: WatchlistSchema
     """
     user_id = get_jwt_identity()
-    with sessions[user_id].connect() as connection:
+    engine = get_db_engine(user_id, session[user_id])
+    with engine.connect() as connection:
+        result = connection.execute(text(f"SELECT getProfileCountry()")).all()
 
-        countryCount = connection.execute(text(f"SELECT getProfileCountry()"))
+    countryCount = [dict(row) for row in result]
 
     return jsonify(countryCount)
 
