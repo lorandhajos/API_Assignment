@@ -1,15 +1,17 @@
+import json
 import os
+from base64 import b64encode, b64decode
 from datetime import timedelta
 
 from apispec import APISpec
 from apispec.ext.marshmallow import MarshmallowPlugin
 from apispec_webframeworks.flask import FlaskPlugin
+from Crypto.Cipher import ChaCha20
 from dotenv import load_dotenv
-from flask import Flask, jsonify, render_template, request, session
+from flask import Flask, jsonify, render_template, request
 from flask_jwt_extended import (JWTManager, create_access_token,
                                 create_refresh_token, get_jwt_identity,
                                 jwt_required)
-from flask_session import Session
 from marshmallow import Schema, fields
 from sqlalchemy import create_engine, text
 
@@ -49,6 +51,8 @@ class WatchlistSchema(Schema):
 api_key_scheme = {"type": "http", "scheme": "bearer", "bearerFormat": "JWT"}
 spec.components.security_scheme("JWT", api_key_scheme)
 
+key = b64decode(os.environ['SECRET_KEY'])
+
 app = Flask(__name__)
 app.config['JWT_SECRET_KEY'] = os.environ['JWT_SECRET_KEY']
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
@@ -56,13 +60,12 @@ app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 
 jwt = JWTManager(app)
-Session(app)
 
-def get_db_engine(user, password):
+def get_db_engine(data):
     if os.environ.get('FLASK_ENV') == 'development':
-        return create_engine(f"postgresql+psycopg://{user}:{password}@localhost:5432/{os.environ['DB_NAME']}", echo=True)
+        return create_engine(f"postgresql+psycopg://{data}@localhost:5432/{os.environ['DB_NAME']}", echo=True)
     else:
-        return create_engine(f"postgresql+psycopg://{user}:{password}@db:5432/{os.environ['DB_NAME']}", echo=True)
+        return create_engine(f"postgresql+psycopg://{data}@db:5432/{os.environ['DB_NAME']}", echo=True)
 
 @app.route('/docs')
 def docs():
@@ -104,15 +107,24 @@ def login():
     try:
         username = request.json.get('username')
         password = request.json.get('password')
-        engine = get_db_engine(username, password)
+
+        data = f"{username}:{password}"
+
+        engine = get_db_engine(data)
         engine.connect()
+
+        cipher = ChaCha20.new(key=key)
+        ciphertext = cipher.encrypt(data.encode('utf-8'))
+
+        nonce = b64encode(cipher.nonce).decode('utf-8')
+        ciphertext = b64encode(ciphertext).decode('utf-8')
+
+        result = json.dumps({'nonce': nonce, 'ciphertext': ciphertext})
     except Exception as e:
         return jsonify({"msg": "Bad username or password"}), 401
 
-    access_token = create_access_token(identity=username)
-    refresh_token = create_refresh_token(identity=username)
-
-    session[username] = password
+    access_token = create_access_token(identity=result)
+    refresh_token = create_refresh_token(identity=result)
 
     return jsonify(access_token=access_token, refresh_token=refresh_token)
 
@@ -162,8 +174,14 @@ def watchlist(watchlist_id):
                     application/json:
                         schema: WatchlistSchema
     """
-    user_id = get_jwt_identity()
-    engine = get_db_engine(user_id, session[user_id])
+    data = json.loads(get_jwt_identity())
+
+    nonce = b64decode(data["nonce"])
+    ciphertext = b64decode(data["ciphertext"])
+
+    cipher = ChaCha20.new(key=key, nonce=nonce)
+    plaintext = cipher.decrypt(ciphertext).decode('utf-8')
+    engine = get_db_engine(plaintext)
     with engine.connect() as connection:
         result = [[], []]
 
@@ -207,8 +225,14 @@ def history(history_id):
                     application/json:
                         schema: WatchlistSchema
     """
-    user_id = get_jwt_identity()
-    engine = get_db_engine(user_id, session[user_id])
+    data = json.loads(get_jwt_identity())
+
+    nonce = b64decode(data["nonce"])
+    ciphertext = b64decode(data["ciphertext"])
+
+    cipher = ChaCha20.new(key=key, nonce=nonce)
+    plaintext = cipher.decrypt(ciphertext).decode('utf-8')
+    engine = get_db_engine(plaintext)
     with engine.connect() as connection:
         result = [[], []]
 
@@ -264,8 +288,14 @@ def access_films(profile_id, film_id):
                     application/json:
                         schema: ErrorResponseSchema
     """
-    username = get_jwt_identity()
-    engine = get_db_engine(username, session[username])
+    data = json.loads(get_jwt_identity())
+
+    nonce = b64decode(data["nonce"])
+    ciphertext = b64decode(data["ciphertext"])
+
+    cipher = ChaCha20.new(key=key, nonce=nonce)
+    plaintext = cipher.decrypt(ciphertext).decode('utf-8')
+    engine = get_db_engine(plaintext)
     with engine.connect() as connection:
         curent_age = connection.execute(text(f"SELECT getAgeProfile(:profile_id);"),
                                         {"profile_id": profile_id}).first()[0]
@@ -311,8 +341,14 @@ def access_series(profile_id, series_id):
                     application/json:
                         schema: ErrorResponseSchema
     """
-    username = get_jwt_identity()
-    engine = get_db_engine(username, session[username])
+    data = json.loads(get_jwt_identity())
+
+    nonce = b64decode(data["nonce"])
+    ciphertext = b64decode(data["ciphertext"])
+
+    cipher = ChaCha20.new(key=key, nonce=nonce)
+    plaintext = cipher.decrypt(ciphertext).decode('utf-8')
+    engine = get_db_engine(plaintext)
     with engine.connect() as connection:
         curent_age = connection.execute(text(f"SELECT getAgeProfile(:profile_id)"),
                                         {"profile_id": profile_id}).first()[0]
@@ -339,8 +375,14 @@ def views_report_films():
                     application/json:
                         schema: WatchlistSchema
     """
-    user_id = get_jwt_identity()
-    engine = get_db_engine(user_id, session[user_id])
+    data = json.loads(get_jwt_identity())
+
+    nonce = b64decode(data["nonce"])
+    ciphertext = b64decode(data["ciphertext"])
+
+    cipher = ChaCha20.new(key=key, nonce=nonce)
+    plaintext = cipher.decrypt(ciphertext).decode('utf-8')
+    engine = get_db_engine(plaintext)
     with engine.connect() as connection:
         result = connection.execute(text(f"SELECT getMovieViews()")).all()
 
@@ -365,8 +407,14 @@ def views_report_series():
                     application/json:
                         schema: WatchlistSchema
     """
-    user_id = get_jwt_identity()
-    engine = get_db_engine(user_id, session[user_id])
+    data = json.loads(get_jwt_identity())
+
+    nonce = b64decode(data["nonce"])
+    ciphertext = b64decode(data["ciphertext"])
+
+    cipher = ChaCha20.new(key=key, nonce=nonce)
+    plaintext = cipher.decrypt(ciphertext).decode('utf-8')
+    engine = get_db_engine(plaintext)
     with engine.connect() as connection:
         result = connection.execute(text(f"SELECT getSeriesViews()")).all()
 
@@ -391,8 +439,14 @@ def country_report():
                     application/json:
                         schema: WatchlistSchema
     """
-    user_id = get_jwt_identity()
-    engine = get_db_engine(user_id, session[user_id])
+    data = json.loads(get_jwt_identity())
+
+    nonce = b64decode(data["nonce"])
+    ciphertext = b64decode(data["ciphertext"])
+
+    cipher = ChaCha20.new(key=key, nonce=nonce)
+    plaintext = cipher.decrypt(ciphertext).decode('utf-8')
+    engine = get_db_engine(plaintext)
     with engine.connect() as connection:
         result = connection.execute(text(f"SELECT getProfileCountry()")).all()
 
