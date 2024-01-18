@@ -181,11 +181,11 @@ def watchlist(watchlist_id):
             for series in resultSeries:
                 result[1].append(series._asdict())
 
-        return WatchlistSchema().dump(result)
+        return jsonify(result)
 
 @app.route('/history/<int:history_id>', endpoint="history", methods=['GET'])
 @jwt_required(optional=False)
-def history(history):
+def history(history_id):
     """
     Returns full history in the same format as the watchlist function
     ---
@@ -213,14 +213,14 @@ def history(history):
         result = [[], []]
 
         resultFilms = connection.execute(text(f"SELECT getHistoryMoviesForID(:history_id);"),
-                                         {"history_id": history})
+                                         {"history_id": history_id})
 
         if resultFilms.rowcount != 0:
             for film in resultFilms:
                 result[0].append(film._asdict())
 
         resultSeries = connection.execute(text(f"SELECT getHistorySeriesForID(:history_id);"),
-                                            {"history_id": history})
+                                            {"history_id": history_id})
 
         if resultSeries.rowcount != 0:
             for series in resultSeries:
@@ -228,9 +228,9 @@ def history(history):
 
         return jsonify(result)
 
-@app.route('/access_films/<int:film_id>', endpoint="access_films", methods=['GET'])
+@app.route('/access_films/<int:profile_id>/<int:film_id>', endpoint="access_films", methods=['GET'])
 @jwt_required(optional=False)
-def access_films(film_id):
+def access_films(profile_id, film_id):
     """
     These 2 functions grant or deny access to the film or series,
     depending on the profile age and films restriction
@@ -240,6 +240,12 @@ def access_films(film_id):
         security:
             - JWT: []
         parameters:
+            - in: path
+              name: profile_id
+              schema:
+                type: integer
+              required: true
+              description: The user ID
             - in: path
               name: film_id
               schema:
@@ -258,22 +264,20 @@ def access_films(film_id):
                     application/json:
                         schema: ErrorResponseSchema
     """
-    user_id = get_jwt_identity()
-    engine = get_db_engine(user_id, session[user_id])
+    username = get_jwt_identity()
+    engine = get_db_engine(username, session[username])
     with engine.connect() as connection:
-        profile_id = get_jwt_identity()
-
         curent_age = connection.execute(text(f"SELECT getAgeProfile(:profile_id);"),
-                                        {"profile_id": profile_id})
+                                        {"profile_id": profile_id}).first()[0]
 
         film_age = connection.execute(text(f"SELECT getAgeRestrictorFilms(:film_id)"),
-                                      {"film_id": film_id})
+                                      {"film_id": film_id}).first()[0]
 
         return jsonify(film_age <= curent_age)
 
-@app.route('/access_series/<int:series_id>', endpoint="access_series", methods=['GET'])
+@app.route('/access_series/<int:profile_id>/<int:series_id>', endpoint="access_series", methods=['GET'])
 @jwt_required(optional=False)
-def access_series(series_id):
+def access_series(profile_id, series_id):
     """
     These 2 functions grant or deny access to the film or series,
     depending on the profile age and films restriction
@@ -283,6 +287,12 @@ def access_series(series_id):
         security:
             - JWT: []
         parameters:
+            - in: path
+              name: profile_id
+              schema:
+                type: integer
+              required: true
+              description: The user ID
             - in: path
               name: series_id
               schema:
@@ -301,14 +311,14 @@ def access_series(series_id):
                     application/json:
                         schema: ErrorResponseSchema
     """
-    user_id = get_jwt_identity()
-    engine = get_db_engine(user_id, session[user_id])
+    username = get_jwt_identity()
+    engine = get_db_engine(username, session[username])
     with engine.connect() as connection:
         curent_age = connection.execute(text(f"SELECT getAgeProfile(:profile_id)"),
-                                        {"profile_id": user_id})
+                                        {"profile_id": profile_id}).first()[0]
 
         series_age = connection.execute(text(f"SELECT getAgeRestrictorSeries(:series_id);"),
-                                        {"series_id": series_id})
+                                        {"series_id": series_id}).first()[0]
 
         return jsonify(series_age <= curent_age)
 
