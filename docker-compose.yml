@@ -12,7 +12,7 @@ services:
 
   api:
     build: ./src
-    command: gunicorn --bind 0.0.0.0:5000 wsgi:application
+    command: gunicorn --bind 0.0.0.0:5000 -w 6 wsgi:application
     volumes:
       - ./src:/usr/src/app
     expose:
@@ -30,6 +30,7 @@ services:
     image: postgres
     volumes:
       - postgres_data:/var/lib/postgresql/data/
+      - ./dataset:/docker-entrypoint-initdb.d
     restart: always
     environment:
       - POSTGRES_DB=${DB_NAME}
