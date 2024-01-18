@@ -2,8 +2,6 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 from werkzeug.security import generate_password_hash, check_password_hash
 from bokeh.embed import components
 from bokeh.plotting import figure
-import random
-import threading
 import requests
 
 app = Flask(__name__)
@@ -62,26 +60,27 @@ def login():
 @app.route('/dashboard')
 def dashboard():
     if 'access_token' in session:
-        p1 = figure(height=350, sizing_mode="stretch_width") 
-        p1.circle(
-            [i for i in range(10)], 
-            [random.randint(1, 50) for j in range(10)], 
-            size=20, 
-            color="navy", 
-            alpha=0.5
-        )
-        p2 = figure(height=350, sizing_mode="stretch_width") 
-        p2.circle( 
-            [i for i in range(10)], 
-            [random.randint(1, 50) for j in range(10)], 
-            size=20,
-            color="navy",
-            alpha=0.5
-        )
+        api_response = requests.get("http://localhost:5000/api/v1/history")
+        
+        if api_response.status_code == 200:
+            data = api_response.json()
 
-        script1, div1 = components(p1)
-        script2, div2 = components(p2)
-        return render_template('dashboard.html', script=[script1, script2], div=[div1, div2])
-        # return f'Welcome to the dashboard, User #{session["user_id"]}!'
+            # Filter data based on keywords
+            keyword = request.args.get('film', default=None)
+            if keyword:
+                filtered_data = [item for item in data if keyword.lower() in item['description'].lower()]
+            else:
+                filtered_data = data
+
+            # Create Bokeh plot
+            p = figure(height=350, sizing_mode="stretch_width")
+            p.circle([i for i in range(len(filtered_data))], [item['value'] for item in filtered_data], size=20, color="navy", alpha=0.5)
+            
+            script, div = components(p)
+            return render_template('dashboard.html', script=script, div=div, data=filtered_data)
+        else:
+            print(api_response.status_code)
+            flash('Error fetching data from the API', 'danger')
+            return "well, not well"
     else:
         return redirect(url_for('login'))

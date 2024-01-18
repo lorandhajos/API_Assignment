@@ -3,28 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdn.tailwindcss.com"></script>
     <title>Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body>
-    <h1>Login</h1>
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <ul>
-                {% for message in messages %}
-                    <li style="color: red;">{{ message }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-    {% endwith %}
-    <form method="post" action="/login">
-        <label for="email">Email:</label>
-        <input type="email" name="email" required>
-        <br>
-        <label for="password">Password:</label>
-        <input type="password" name="password" required>
-        <br>
-        <input type="submit" value="Login">
-    </form>
+<body class="bg-gray flex items-center justify-center h-screen">
+    <div class="w-565 h-648 bg-[#fecaca] rounded-md p-8 transform -rotate-30">
+        <h1 class="text-3xl font-bold mb-4">Login</h1>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <ul>
+                    {% for message in messages %}
+                        <li style="color: red;">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+        <form method="post" action="/login">
+            <label for="email">Email:</label>
+            <input type="email" name="email" required class="mb-2 block">
+            <label for="password">Password:</label>
+            <input type="password" name="password" required class="mb-2 block">
+            <input type="submit" value="Login" class="bg-FDE4E4 text-black px-4 py-2 rounded-md cursor-pointer">
+        </form>
+    </div>
 </body>
 </html>
