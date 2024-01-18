@@ -6,7 +6,16 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100">
-
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+        <ul class=flashes>
+        {% for message in messages %}
+        <li>{{ message }}</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+    {% endwith %}
+    {% block body %}{% endblock %}
     <div class="container mx-auto">
         <h1 class="text-center py-4 text-3xl font-bold">Statistics</h1> 
 

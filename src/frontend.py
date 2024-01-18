@@ -60,21 +60,21 @@ def login():
 @app.route('/dashboard')
 def dashboard():
     if 'access_token' in session:
-        api_response = requests.get("http://localhost:5000/api/v1/history")
+        api_response = requests.get("http://localhost:5000/api/v1/views_report_films")
         
         if api_response.status_code == 200:
             data = api_response.json()
 
             # Filter data based on keywords
-            keyword = request.args.get('film', default=None)
+            keyword = request.args.get('title', default=None)
             if keyword:
-                filtered_data = [item for item in data if keyword.lower() in item['description'].lower()]
+                filtered_data = [item for item in data if keyword.lower() in item['views'].lower()]
             else:
                 filtered_data = data
 
             # Create Bokeh plot
             p = figure(height=350, sizing_mode="stretch_width")
-            p.circle([i for i in range(len(filtered_data))], [item['value'] for item in filtered_data], size=20, color="navy", alpha=0.5)
+            p.circle([i for i in range(len(filtered_data))], [item['views'] for item in filtered_data], size=20, color="navy", alpha=0.5)
             
             script, div = components(p)
             return render_template('dashboard.html', script=script, div=div, data=filtered_data)
