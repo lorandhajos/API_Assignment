@@ -2,13 +2,14 @@ import os
 from datetime import timedelta
 
 from apispec import APISpec
-from dotenv import load_dotenv
 from apispec.ext.marshmallow import MarshmallowPlugin
 from apispec_webframeworks.flask import FlaskPlugin
-from flask import Flask, jsonify, render_template, request
+from dotenv import load_dotenv
+from flask import Flask, jsonify, render_template, request, session
 from flask_jwt_extended import (JWTManager, create_access_token,
                                 create_refresh_token, get_jwt_identity,
                                 jwt_required)
+from flask_session import Session
 from marshmallow import Schema, fields
 from sqlalchemy import create_engine, text
 
@@ -31,7 +32,7 @@ spec = APISpec(
 )
 
 class LoginSchema(Schema):
-    email = fields.Email(required=True)
+    username = fields.String(required=True)
     password = fields.String(required=True)
 
 class LoginResponseSchema(Schema):
@@ -51,10 +52,11 @@ spec.components.security_scheme("JWT", api_key_scheme)
 app = Flask(__name__)
 app.config['JWT_SECRET_KEY'] = os.environ['JWT_SECRET_KEY']
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
+app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_TYPE"] = "filesystem"
 
 jwt = JWTManager(app)
-
-sessions = {}
+Session(app)
 
 def get_db_engine(user, password):
     if os.environ.get('FLASK_ENV') == 'development':
@@ -99,21 +101,20 @@ def login():
                     application/json:
                         schema: ErrorResponseSchema
     """
-    print(request.json)
-    engine = get_db_engine(os.environ['DB_USER'], os.environ['DB_PASS'])
-    with engine.connect() as connection:
-        result = connection.execute(text(f"SELECT login(:email, :password)"),
-                                    {"email": request.json.get('email'), "password": request.json.get('password')})
-        if result.rowcount == 0:
-            return jsonify({"msg": "Bad username or password"}), 401
+    try:
+        username = request.json.get('username')
+        password = request.json.get('password')
+        engine = get_db_engine(username, password)
+        engine.connect()
+    except Exception as e:
+        return jsonify({"msg": "Bad username or password"}), 401
 
-        user_id = result.first()._asdict().get('id')
-        access_token = create_access_token(identity=user_id)
-        refresh_token = create_refresh_token(identity=user_id)
+    access_token = create_access_token(identity=username)
+    refresh_token = create_refresh_token(identity=username)
 
-        #sessions[user_id] = get_db_engine(request.json.get('email'), request.json.get('password'))
+    session[username] = password
 
-        return jsonify(access_token=access_token, refresh_token=refresh_token)
+    return jsonify(access_token=access_token, refresh_token=refresh_token)
 
 @app.route('/token/refresh', methods=['POST'])
 @jwt_required(refresh=True)
@@ -162,7 +163,8 @@ def watchlist(watchlist_id):
                         schema: WatchlistSchema
     """
     user_id = get_jwt_identity()
-    with sessions[user_id].connect() as connection:
+    engine = get_db_engine(user_id, session[user_id])
+    with engine.connect() as connection:
         result = [[], []]
 
         resultFilms = connection.execute(text(f"SELECT getWatchlistFilmsForID(:watchlist_id);"),
@@ -206,7 +208,8 @@ def history(history):
                         schema: WatchlistSchema
     """
     user_id = get_jwt_identity()
-    with sessions[user_id].connect() as connection:
+    engine = get_db_engine(user_id, session[user_id])
+    with engine.connect() as connection:
         result = [[], []]
 
         resultFilms = connection.execute(text(f"SELECT getHistoryMoviesForID(:history_id);"),
@@ -256,7 +259,8 @@ def access_films(film_id):
                         schema: ErrorResponseSchema
     """
     user_id = get_jwt_identity()
-    with sessions[user_id].connect() as connection:
+    engine = get_db_engine(user_id, session[user_id])
+    with engine.connect() as connection:
         profile_id = get_jwt_identity()
 
         curent_age = connection.execute(text(f"SELECT getAgeProfile(:profile_id);"),
@@ -298,7 +302,8 @@ def access_series(series_id):
                         schema: ErrorResponseSchema
     """
     user_id = get_jwt_identity()
-    with sessions[user_id].connect() as connection:
+    engine = get_db_engine(user_id, session[user_id])
+    with engine.connect() as connection:
         curent_age = connection.execute(text(f"SELECT getAgeProfile(:profile_id)"),
                                         {"profile_id": user_id})
 
@@ -325,9 +330,11 @@ def views_report_films():
                         schema: WatchlistSchema
     """
     user_id = get_jwt_identity()
-    with sessions[user_id].connect() as connection:
+    engine = get_db_engine(user_id, session[user_id])
+    with engine.connect() as connection:
+        result = connection.execute(text(f"SELECT getMovieViews()")).all()
 
-        totalViewCount = connection.execute(text(f"SELECT getMovieViews()"))
+    totalViewCount = [dict(row) for row in result]
 
     return jsonify(totalViewCount)
 
@@ -349,8 +356,11 @@ def views_report_series():
                         schema: WatchlistSchema
     """
     user_id = get_jwt_identity()
-    with sessions[user_id].connect() as connection:
-        totalViewCount = connection.execute(text(f"SELECT getSeriesViews()"))
+    engine = get_db_engine(user_id, session[user_id])
+    with engine.connect() as connection:
+        result = connection.execute(text(f"SELECT getSeriesViews()")).all()
+
+    totalViewCount = [dict(row) for row in result]
 
     return jsonify(totalViewCount)
 
@@ -372,9 +382,11 @@ def country_report():
                         schema: WatchlistSchema
     """
     user_id = get_jwt_identity()
-    with sessions[user_id].connect() as connection:
+    engine = get_db_engine(user_id, session[user_id])
+    with engine.connect() as connection:
+        result = connection.execute(text(f"SELECT getProfileCountry()")).all()
 
-        countryCount = connection.execute(text(f"SELECT getProfileCountry()"))
+    countryCount = [dict(row) for row in result]
 
     return jsonify(countryCount)
 
