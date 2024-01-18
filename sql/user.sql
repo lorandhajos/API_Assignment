@@ -44,3 +44,9 @@ GRANT EXECUTE ON FUNCTION getAgeRestrictorFilms TO api_user;
 GRANT EXECUTE ON FUNCTION getAgeRestrictorSeries TO api_user;
 
 GRANT EXECUTE ON FUNCTION login TO api_user;
+
+GRANT EXECUTE ON FUNCTION getMovieViews TO api_user;
+
+GRANT EXECUTE ON FUNCTION getSeriesViews TO api_user;
+
+GRANT EXECUTE ON FUNCTION getProfileCountry TO api_user;

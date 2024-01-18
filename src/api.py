@@ -194,7 +194,6 @@ def access(series_id):
     """
     user_id = get_jwt_identity()
     with sessions[user_id].connect() as connection:
-        profile_id = get_jwt_identity()
 
         curent_age = connection.execute(text(f"SELECT getAgeProfile(:profile_id)"),
                                         {"profile_id": profile_id})
@@ -203,6 +202,42 @@ def access(series_id):
                                         {"series_id": series_id})
 
         return series_age <= curent_age
+
+@app.route('/viewsReportFilms', endpoint='viewsReport', methods=['GET'])
+@jwt_required
+def viewsReport():
+    """
+    These 2 functions fetch a total view count with the name
+    """
+    user_id = get_jwt_identity()
+    with sessions[user_id].connect() as connection:
+
+        totalViewCount = connection.execute(text(f"SELECT getMovieViews()"))
+
+    return jsonify(totalViewCount)
+
+@app.route('/viewsReportSeries', endpoint='viewsReport', methods=['GET'])
+@jwt_required
+def viewsReport():
+    user_id = get_jwt_identity()
+    with sessions[user_id].connect() as connection:
+
+        totalViewCount = connection.execute(text(f"SELECT getSeriesViews()"))
+
+    return jsonify(totalViewCount)
+
+@app.route('/countryReport', endpoint='countryReport', methods=['GET'])
+@jwt_required
+def countryReport():
+    """
+    This is the function which returns the total count of 
+    """
+    user_id = get_jwt_identity()
+    with sessions[user_id].connect() as connection:
+
+        countryCount = connection.execute(text(f"SELECT getProfileCountry()"))
+
+    return jsonify(countryCount)
 
 with app.test_request_context():
     spec.path(view=login)
