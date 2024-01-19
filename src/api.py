@@ -1,28 +1,32 @@
+import json
+import os
+from base64 import b64encode, b64decode
 from datetime import timedelta
 
 from apispec import APISpec
 from apispec.ext.marshmallow import MarshmallowPlugin
 from apispec_webframeworks.flask import FlaskPlugin
-from dotenv import dotenv_values
+from Crypto.Cipher import ChaCha20
+from dotenv import load_dotenv
 from flask import Flask, jsonify, render_template, request
-from flask_cors import CORS
 from flask_jwt_extended import (JWTManager, create_access_token,
                                 create_refresh_token, get_jwt_identity,
                                 jwt_required)
 from marshmallow import Schema, fields
 from sqlalchemy import create_engine, text
 
-config = dotenv_values("../.env")
+if os.environ.get('FLASK_ENV') == 'development':
+    load_dotenv("../.env")
 
 spec = APISpec(
     title = "Netflix API",
-    version = f"{config['API_VERSION']}.0.0",
+    version = f"{os.environ['API_VERSION']}.0.0",
     openapi_version = "3.1.0",
     plugins = [FlaskPlugin(), MarshmallowPlugin()],
     info = dict(
         description="Netflix API",
     ),
-    servers = [dict(url=f"http://localhost:5000/api/{config['API_VERSION']}")],
+    servers = [dict(url=f"/api/{os.environ['API_VERSION']}")],
     externalDocs = dict(
         description="GitHub",
         url="https://github.com/lorandhajos/API_Assignment",
@@ -30,7 +34,7 @@ spec = APISpec(
 )
 
 class LoginSchema(Schema):
-    email = fields.Email(required=True)
+    username = fields.String(required=True)
     password = fields.String(required=True)
 
 class LoginResponseSchema(Schema):
@@ -40,21 +44,28 @@ class LoginResponseSchema(Schema):
 class ErrorResponseSchema(Schema):
     msg = fields.String(required=True)
 
+class WatchlistSchema(Schema):
+    film = fields.List(fields.Integer(), required=True)
+    series = fields.List(fields.Integer(), required=True)
+
 api_key_scheme = {"type": "http", "scheme": "bearer", "bearerFormat": "JWT"}
 spec.components.security_scheme("JWT", api_key_scheme)
 
-app = Flask(__name__)
-app.config['JWT_SECRET_KEY'] = config['JWT_SECRET_KEY']
-app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
+key = b64decode(os.environ['SECRET_KEY'])
 
-CORS(app)
+app = Flask(__name__)
+app.config['JWT_SECRET_KEY'] = os.environ['JWT_SECRET_KEY']
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
+app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_TYPE"] = "filesystem"
 
 jwt = JWTManager(app)
 
-sessions = {}
-
-def get_db_engine(user, password):
-    return create_engine(f"postgresql+psycopg://{user}:{password}@localhost:5432/{config['DB_NAME']}", echo=True)
+def get_db_engine(data):
+    if os.environ.get('FLASK_ENV') == 'development':
+        return create_engine(f"postgresql+psycopg://{data}@localhost:5432/{os.environ['DB_NAME']}", echo=True)
+    else:
+        return create_engine(f"postgresql+psycopg://{data}@db:5432/{os.environ['DB_NAME']}", echo=True)
 
 @app.route('/docs')
 def docs():
@@ -93,41 +104,85 @@ def login():
                     application/json:
                         schema: ErrorResponseSchema
     """
-    print(request.json)
-    engine = get_db_engine(config['DB_USER'], config['DB_PASS'])
-    with engine.connect() as connection:
-        result = connection.execute(text(f"SELECT login(:email, :password)"),
-                                    {"email": request.json.get('email'), "password": request.json.get('password')})
-        if result.rowcount == 0:
-            return jsonify({"msg": "Bad username or password"}), 401
+    try:
+        username = request.json.get('username')
+        password = request.json.get('password')
 
-        user_id = result.first()._asdict().get('id')
-        access_token = create_access_token(identity=user_id)
-        refresh_token = create_refresh_token(identity=user_id)
+        data = f"{username}:{password}"
 
-        #sessions[user_id] = get_db_engine(request.json.get('email'), request.json.get('password'))
+        engine = get_db_engine(data)
+        engine.connect()
 
-        return jsonify(access_token=access_token, refresh_token=refresh_token)
+        cipher = ChaCha20.new(key=key)
+        ciphertext = cipher.encrypt(data.encode('utf-8'))
+
+        nonce = b64encode(cipher.nonce).decode('utf-8')
+        ciphertext = b64encode(ciphertext).decode('utf-8')
+
+        result = json.dumps({'nonce': nonce, 'ciphertext': ciphertext})
+    except Exception as e:
+        return jsonify({"msg": "Bad username or password"}), 401
+
+    access_token = create_access_token(identity=result)
+    refresh_token = create_refresh_token(identity=result)
+
+    return jsonify(access_token=access_token, refresh_token=refresh_token)
 
 @app.route('/token/refresh', methods=['POST'])
 @jwt_required(refresh=True)
 def refresh():
     """
     Token refresh endpoint
+    ---
+    post:
+        description: Token refresh endpoint
+        security:
+            - JWT: []
+        responses:
+            200:
+                description: Token refresh successful
+                content:
+                    application/json:
+                        schema: LoginResponseSchema
     """
     current_user = get_jwt_identity()
     new_token = create_access_token(identity=current_user)
 
     return jsonify(access_token=new_token)
 
-@app.route('/watchlist/<int:watchlist_id>/', methods=['GET'])
-@jwt_required
+@app.route('/watchlist/<int:watchlist_id>', methods=['GET'])
+@jwt_required(optional=False)
 def watchlist(watchlist_id):
     """
     Returns the watchlist
+    ---
+    get:
+        description: Returns the watchlist
+        security:
+            - JWT: []
+        parameters:
+            - in: path
+              name: watchlist_id
+              schema:
+                type: integer
+              required: true
+              description: The watchlist ID
+        responses:
+            200:
+                description: Watchlist returned
+                content:
+                    application/json:
+                        schema: WatchlistSchema
     """
-    user_id = get_jwt_identity()
-    with sessions[user_id].connect() as connection:
+    data = json.loads(get_jwt_identity())
+
+    nonce = b64decode(data["nonce"])
+    ciphertext = b64decode(data["ciphertext"])
+
+    cipher = ChaCha20.new(key=key, nonce=nonce)
+    plaintext = cipher.decrypt(ciphertext).decode('utf-8')
+    engine = get_db_engine(plaintext)
+    with engine.connect() as connection:
         result = [[], []]
 
         resultFilms = connection.execute(text(f"SELECT getWatchlistFilmsForID(:watchlist_id);"),
@@ -146,25 +201,50 @@ def watchlist(watchlist_id):
 
         return jsonify(result)
 
-@app.route('/history/<int:history_id>', endpoint='history', methods=['GET'])
-@jwt_required
-def history(history):
+@app.route('/history/<int:history_id>', endpoint="history", methods=['GET'])
+@jwt_required(optional=False)
+def history(history_id):
     """
     Returns full history in the same format as the watchlist function
+    ---
+    get:
+        description: Returns full history in the same format as the watchlist function
+        security:
+            - JWT: []
+        parameters:
+            - in: path
+              name: history_id
+              schema:
+                type: integer
+              required: true
+              description: The history ID
+        responses:
+            200:
+                description: History returned
+                content:
+                    application/json:
+                        schema: WatchlistSchema
     """
-    user_id = get_jwt_identity()
-    with sessions[user_id].connect() as connection:
+    data = json.loads(get_jwt_identity())
+
+    nonce = b64decode(data["nonce"])
+    ciphertext = b64decode(data["ciphertext"])
+
+    cipher = ChaCha20.new(key=key, nonce=nonce)
+    plaintext = cipher.decrypt(ciphertext).decode('utf-8')
+    engine = get_db_engine(plaintext)
+    with engine.connect() as connection:
         result = [[], []]
 
         resultFilms = connection.execute(text(f"SELECT getHistoryMoviesForID(:history_id);"),
-                                         {"history_id": history})
+                                         {"history_id": history_id})
 
         if resultFilms.rowcount != 0:
             for film in resultFilms:
                 result[0].append(film._asdict())
 
         resultSeries = connection.execute(text(f"SELECT getHistorySeriesForID(:history_id);"),
-                                            {"history_id": history})
+                                            {"history_id": history_id})
 
         if resultSeries.rowcount != 0:
             for series in resultSeries:
@@ -172,39 +252,215 @@ def history(history):
 
         return jsonify(result)
 
-@app.route('/access_films/<int:film_id>', endpoint='access_films', methods=['GET'])
-@jwt_required
-def access(film_id):
-    user_id = get_jwt_identity()
-    with sessions[user_id].connect() as connection:
-        profile_id = get_jwt_identity()
+@app.route('/access_films/<int:profile_id>/<int:film_id>', endpoint="access_films", methods=['GET'])
+@jwt_required(optional=False)
+def access_films(profile_id, film_id):
+    """
+    These 2 functions grant or deny access to the film or series,
+    depending on the profile age and films restriction
+    ---
+    get:
+        description: These 2 functions grant or deny access to the film or series, depending on the profile age and films restriction
+        security:
+            - JWT: []
+        parameters:
+            - in: path
+              name: profile_id
+              schema:
+                type: integer
+              required: true
+              description: The user ID
+            - in: path
+              name: film_id
+              schema:
+                type: integer
+              required: true
+              description: The film ID
+        responses:
+            200:
+                description: Access granted
+                content:
+                    application/json:
+                        schema: WatchlistSchema
+            401:
+                description: Access denied
+                content:
+                    application/json:
+                        schema: ErrorResponseSchema
+    """
+    data = json.loads(get_jwt_identity())
 
+    nonce = b64decode(data["nonce"])
+    ciphertext = b64decode(data["ciphertext"])
+
+    cipher = ChaCha20.new(key=key, nonce=nonce)
+    plaintext = cipher.decrypt(ciphertext).decode('utf-8')
+    engine = get_db_engine(plaintext)
+    with engine.connect() as connection:
         curent_age = connection.execute(text(f"SELECT getAgeProfile(:profile_id);"),
-                                        {"profile_id": profile_id})
+                                        {"profile_id": profile_id}).first()[0]
 
         film_age = connection.execute(text(f"SELECT getAgeRestrictorFilms(:film_id)"),
-                                      {"film_id": film_id})
+                                      {"film_id": film_id}).first()[0]
 
-        return film_age <= curent_age
+        return jsonify(film_age <= curent_age)
 
-@app.route('/access_series/<int:series_id>', endpoint="access_series", methods=['GET'])
-@jwt_required
-def access(series_id):
+@app.route('/access_series/<int:profile_id>/<int:series_id>', endpoint="access_series", methods=['GET'])
+@jwt_required(optional=False)
+def access_series(profile_id, series_id):
     """
-    These 2 functions grant or deny acces to the film or series,
+    These 2 functions grant or deny access to the film or series,
     depending on the profile age and films restriction
+    ---
+    get:
+        description: These 2 functions grant or deny access to the film or series, depending on the profile age and films restriction
+        security:
+            - JWT: []
+        parameters:
+            - in: path
+              name: profile_id
+              schema:
+                type: integer
+              required: true
+              description: The user ID
+            - in: path
+              name: series_id
+              schema:
+                type: integer
+              required: true
+              description: The series ID
+        responses:
+            200:
+                description: Access granted
+                content:
+                    application/json:
+                        schema: WatchlistSchema
+            401:
+                description: Access denied
+                content:
+                    application/json:
+                        schema: ErrorResponseSchema
     """
-    user_id = get_jwt_identity()
-    with sessions[user_id].connect() as connection:
-        profile_id = get_jwt_identity()
+    data = json.loads(get_jwt_identity())
 
+    nonce = b64decode(data["nonce"])
+    ciphertext = b64decode(data["ciphertext"])
+
+    cipher = ChaCha20.new(key=key, nonce=nonce)
+    plaintext = cipher.decrypt(ciphertext).decode('utf-8')
+    engine = get_db_engine(plaintext)
+    with engine.connect() as connection:
         curent_age = connection.execute(text(f"SELECT getAgeProfile(:profile_id)"),
-                                        {"profile_id": profile_id})
+                                        {"profile_id": profile_id}).first()[0]
 
         series_age = connection.execute(text(f"SELECT getAgeRestrictorSeries(:series_id);"),
-                                        {"series_id": series_id})
+                                        {"series_id": series_id}).first()[0]
 
-        return series_age <= curent_age
+        return jsonify(series_age <= curent_age)
+
+@app.route('/views_report_films', endpoint='views_report_films', methods=['GET'])
+@jwt_required(optional=False)
+def views_report_films():
+    """
+    These 2 functions fetch a total view count with the name
+    ---
+    get:
+        description: These 2 functions fetch a total view count with the name
+        security:
+            - JWT: []
+        responses:
+            200:
+                description: Total view count returned
+                content:
+                    application/json:
+                        schema: WatchlistSchema
+    """
+    data = json.loads(get_jwt_identity())
+
+    nonce = b64decode(data["nonce"])
+    ciphertext = b64decode(data["ciphertext"])
+
+    cipher = ChaCha20.new(key=key, nonce=nonce)
+    plaintext = cipher.decrypt(ciphertext).decode('utf-8')
+    engine = get_db_engine(plaintext)
+    with engine.connect() as connection:
+        result = connection.execute(text(f"SELECT getMovieViews()")).all()
+
+    totalViewCount = [dict(row) for row in result]
+
+    return jsonify(totalViewCount)
+
+@app.route('/views_report_series', endpoint='views_report_series', methods=['GET'])
+@jwt_required(optional=False)
+def views_report_series():
+    """
+    These 2 functions fetch a total view count with the name
+    ---
+    get:
+        description: These 2 functions fetch a total view count with the name
+        security:
+            - JWT: []
+        responses:
+            200:
+                description: Total view count returned
+                content:
+                    application/json:
+                        schema: WatchlistSchema
+    """
+    data = json.loads(get_jwt_identity())
+
+    nonce = b64decode(data["nonce"])
+    ciphertext = b64decode(data["ciphertext"])
+
+    cipher = ChaCha20.new(key=key, nonce=nonce)
+    plaintext = cipher.decrypt(ciphertext).decode('utf-8')
+    engine = get_db_engine(plaintext)
+    with engine.connect() as connection:
+        result = connection.execute(text(f"SELECT getSeriesViews()")).all()
+
+    totalViewCount = [dict(row) for row in result]
+
+    return jsonify(totalViewCount)
+
+@app.route('/country_report', endpoint='country_report', methods=['GET'])
+@jwt_required(optional=False)
+def country_report():
+    """
+    This is the function which returns the total count of the countries
+    ---
+    get:
+        description: This is the function which returns the total count of the countries
+        security:
+            - JWT: []
+        responses:
+            200:
+                description: Total count of the countries returned
+                content:
+                    application/json:
+                        schema: WatchlistSchema
+    """
+    data = json.loads(get_jwt_identity())
+
+    nonce = b64decode(data["nonce"])
+    ciphertext = b64decode(data["ciphertext"])
+
+    cipher = ChaCha20.new(key=key, nonce=nonce)
+    plaintext = cipher.decrypt(ciphertext).decode('utf-8')
+    engine = get_db_engine(plaintext)
+    with engine.connect() as connection:
+        result = connection.execute(text(f"SELECT getProfileCountry()")).all()
+
+    countryCount = [dict(row) for row in result]
+
+    return jsonify(countryCount)
 
 with app.test_request_context():
     spec.path(view=login)
+    spec.path(view=refresh)
+    spec.path(view=watchlist)
+    spec.path(view=history)
+    spec.path(view=access_films)
+    spec.path(view=access_series)
+    spec.path(view=views_report_films)
+    spec.path(view=views_report_series)
+    spec.path(view=country_report)
