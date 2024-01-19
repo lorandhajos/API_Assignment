@@ -72,7 +72,8 @@ def dashboard():
                 filtered_data = [item for item in data if keyword.lower() in item['views'].lower()]
             else:
                 filtered_data = data
-
+            print("aaaaaaaaaaaaa")
+            print(filtered_data)
             # Create Bokeh plot
             p = figure(height=350, sizing_mode="stretch_width")
             p.circle([i for i in range(len(filtered_data))], [item['views'] for item in filtered_data], size=20, color="navy", alpha=0.5)
