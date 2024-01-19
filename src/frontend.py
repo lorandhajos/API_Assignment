@@ -40,13 +40,14 @@ def register():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        email = request.form['email']
+        username = request.form['username']
         password = request.form['password']
         # additional checks for the username and password
-        if(email == '' or password == ''):
+        if(username == '' or password == ''):
             flash('Please fill out the form!', 'danger')
             return redirect(url_for('login'))
-        req = requests.post("http://localhost:5000/api/v1/login", json={"email": email, "password": password})
+        req = requests.post("http://localhost:5000/api/v1/login", json={"username": username, "password": password})
+        print(req.status_code)
         if req.status_code == 200:
             session['access_token'] = req.json()['access_token']
             session['refresh_token'] = req.json()['refresh_token']
@@ -60,7 +61,7 @@ def login():
 @app.route('/dashboard')
 def dashboard():
     if 'access_token' in session:
-        api_response = requests.get("http://localhost:5000/api/v1/views_report_films")
+        api_response = requests.get("http://localhost:5000/api/v1/views_report_films", headers={"Authorization": f"Bearer {session['access_token']}"})
         
         if api_response.status_code == 200:
             data = api_response.json()
