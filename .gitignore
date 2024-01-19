@@ -3,4 +3,5 @@ __pycache__
 .vscode
 .idea
 .env
+.DS_Store
 flask_session
