@@ -74,15 +74,6 @@ $$
 $$
 LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION getMovieViews()
-RETURNS TABLE(views integer, title VARCHAR) AS
-$$
-   BEGIN
-     RETURN QUERY SELECT movie.views, movie.title FROM movie;
-   END;
-$$
-LANGUAGE plpgsql;
-
 CREATE OR REPLACE FUNCTION getSeriesViews()
 RETURNS TABLE(views integer, title VARCHAR) AS
 $$
@@ -100,3 +91,22 @@ $$
    END;
 $$
 LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION getMovieNames()
+RETURNS TABLE(title VARCHAR) AS
+$$
+   BEGIN
+     RETURN QUERY SELECT movie.title FROM movie ORDER BY movie.movie_id;
+   END;
+$$
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION getMovieViews()
+RETURNS TABLE(views integer) AS
+$$
+   BEGIN
+     RETURN QUERY SELECT movie.views FROM movie ORDER BY movie.movie_id;
+   END;
+$$
+LANGUAGE plpgsql;
+
