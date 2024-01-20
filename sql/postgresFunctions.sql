@@ -74,15 +74,6 @@ $$
 $$
 LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION getSeriesViews()
-RETURNS TABLE(views integer, title VARCHAR) AS
-$$
-   BEGIN
-     RETURN QUERY SELECT series.views, series.title FROM series;
-   END;
-$$
-LANGUAGE plpgsql;
-
 CREATE OR REPLACE FUNCTION getProfileCountry()
 RETURNS TABLE(country VARCHAR, count integer) AS
 $$
@@ -110,3 +101,20 @@ $$
 $$
 LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION getSeriesTitle()
+RETURNS TABLE(title VARCHAR) AS
+$$
+   BEGIN
+     RETURN QUERY SELECT series.title FROM series;
+   END;
+$$
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION getSeriesViews()
+RETURNS TABLE(views integer) AS
+$$
+   BEGIN
+     RETURN QUERY SELECT series.views FROM series;
+   END;
+$$
+LANGUAGE plpgsql;

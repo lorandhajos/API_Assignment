@@ -428,9 +428,44 @@ def views_report_films_views():
 
     return jsonify(totalViews)
 
-@app.route('/views_report_series', endpoint='views_report_series', methods=['GET'])
+@app.route('/views_report_series_title', endpoint='views_report_series_title', methods=['GET'])
 @jwt_required(optional=False)
-def views_report_series():
+def views_report_series_title():
+    """
+    These 2 functions fetch a total view count with the name
+    ---
+    get:
+        description: These 2 functions fetch a total view count with the name
+        security:
+            - JWT: []
+        responses:
+            200:
+                description: Total view count returned
+                content:
+                    application/json:
+                        schema: WatchlistSchema
+    """
+    data = json.loads(get_jwt_identity())
+
+    nonce = b64decode(data["nonce"])
+    ciphertext = b64decode(data["ciphertext"])
+
+    cipher = ChaCha20.new(key=key, nonce=nonce)
+    plaintext = cipher.decrypt(ciphertext).decode('utf-8')
+    engine = get_db_engine(plaintext)
+    with engine.connect() as connection:
+        result = connection.execute(text(f"SELECT getSeriesTitle()")).all()
+
+    totalNames = []
+
+    for title in result:
+        totalNames.append({"title" : title[0]})
+
+    return jsonify(totalNames)
+
+@app.route('/views_report_series_views', endpoint='views_report_series_views', methods=['GET'])
+@jwt_required(optional=False)
+def views_report_series_views():
     """
     These 2 functions fetch a total view count with the name
     ---
@@ -456,9 +491,12 @@ def views_report_series():
     with engine.connect() as connection:
         result = connection.execute(text(f"SELECT getSeriesViews()")).all()
 
-    totalViewCount = [dict(row) for row in result]
+    totalViews = []
 
-    return jsonify(totalViewCount)
+    for title in result:
+        totalViews.append({"views" : title[0]})
+
+    return jsonify(totalViews)
 
 @app.route('/country_report', endpoint='country_report', methods=['GET'])
 @jwt_required(optional=False)
@@ -501,5 +539,6 @@ with app.test_request_context():
     spec.path(view=access_series)
     spec.path(view=views_report_films_names)
     spec.path(view=views_report_films_views)
-    spec.path(view=views_report_series)
+    spec.path(view=views_report_series_views)
+    spec.path(view=views_report_series_title)
     spec.path(view=country_report)
