@@ -498,9 +498,9 @@ def views_report_series_views():
 
     return jsonify(totalViews)
 
-@app.route('/country_report', endpoint='country_report', methods=['GET'])
+@app.route('/country_report_n_of_users', endpoint='country_report_n_of_users', methods=['GET'])
 @jwt_required(optional=False)
-def country_report():
+def country_report_n_of_users():
     """
     This is the function which returns the total count of the countries
     ---
@@ -524,11 +524,49 @@ def country_report():
     plaintext = cipher.decrypt(ciphertext).decode('utf-8')
     engine = get_db_engine(plaintext)
     with engine.connect() as connection:
-        result = connection.execute(text(f"SELECT getProfileCountry()")).all()
+        result = connection.execute(text(f"SELECT getNOfUsersPerCountry()")).all()
 
-    countryCount = [dict(row) for row in result]
+    totalNumberOfUsers = []
 
-    return jsonify(countryCount)
+    for number in result:
+        totalNumberOfUsers.append({"number" : number[0]})
+
+    return jsonify(totalNumberOfUsers)
+
+@app.route('/country_report_country_of_users', endpoint='country_report_country_of_users', methods=['GET'])
+@jwt_required(optional=False)
+def country_report_country_of_users():
+    """
+    This is the function which returns the total count of the countries
+    ---
+    get:
+        description: This is the function which returns the total count of the countries
+        security:
+            - JWT: []
+        responses:
+            200:
+                description: Total count of the countries returned
+                content:
+                    application/json:
+                        schema: WatchlistSchema
+    """
+    data = json.loads(get_jwt_identity())
+
+    nonce = b64decode(data["nonce"])
+    ciphertext = b64decode(data["ciphertext"])
+
+    cipher = ChaCha20.new(key=key, nonce=nonce)
+    plaintext = cipher.decrypt(ciphertext).decode('utf-8')
+    engine = get_db_engine(plaintext)
+    with engine.connect() as connection:
+        result = connection.execute(text(f"SELECT getUsersCountry()")).all()
+
+    countryOfUsers = []
+
+    for country in result:
+        countryOfUsers.append({"country" : country[0]})
+
+    return jsonify(countryOfUsers)
 
 with app.test_request_context():
     spec.path(view=login)
@@ -541,4 +579,5 @@ with app.test_request_context():
     spec.path(view=views_report_films_views)
     spec.path(view=views_report_series_views)
     spec.path(view=views_report_series_title)
-    spec.path(view=country_report)
+    spec.path(view=country_report_n_of_users)
+    spec.path(view=country_report_country_of_users)

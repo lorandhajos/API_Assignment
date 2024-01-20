@@ -74,15 +74,6 @@ $$
 $$
 LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION getProfileCountry()
-RETURNS TABLE(country VARCHAR, count integer) AS
-$$
-   BEGIN
-     RETURN QUERY SELECT profile.country, COUNT(profile.country)::int FROM profile GROUP BY profile.country;
-   END;
-$$
-LANGUAGE plpgsql;
-
 CREATE OR REPLACE FUNCTION getMovieNames()
 RETURNS TABLE(title VARCHAR) AS
 $$
@@ -115,6 +106,24 @@ RETURNS TABLE(views integer) AS
 $$
    BEGIN
      RETURN QUERY SELECT series.views FROM series;
+   END;
+$$
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION getNOfUsersPerCountry()
+RETURNS TABLE(count integer) AS
+$$
+   BEGIN
+     RETURN QUERY SELECT COUNT(profile.country)::int FROM profile GROUP BY profile.country;
+   END;
+$$
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION getUsersCountry()
+RETURNS TABLE(country VARCHAR) AS
+$$
+   BEGIN
+     RETURN QUERY SELECT profile.country FROM profile GROUP BY profile.country;
    END;
 $$
 LANGUAGE plpgsql;
