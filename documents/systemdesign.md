@@ -20,8 +20,15 @@ flowchart LR
 For backups we suggest following the 3-2-1 rule.
 
 + Production data (Copy 1, Production server)
-+ Backup (Copy 2, GitHub repository)
-+ Disaster recovery off site (Copy 3, Cold storage)
++ Backup (Copy 2, On-site server)
++ Disaster recovery (Copy 3, Off-site server).
+
+We suggest using cron to automatically create a backup of the database daily using ```backup.sh```.
+The backup file should then be copied over to a separate on-site file storage server.
+
+The backups should be copied to the off-site disaster recovery media at least once a week.
+
+The backups should be retained for a maximum of one week.
 
 ## API
 
