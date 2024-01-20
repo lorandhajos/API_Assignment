@@ -1,41 +1,19 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from bokeh.embed import components
-from bokeh.plotting import figure
+from bokeh.plotting import figure, output_file, show
+from bokeh.models import ColumnDataSource, HoverTool
+from bokeh.io import output_file, show
+import math
 import requests
 
 app = Flask(__name__)
 
 app.config['SECRET_KEY'] = "secret"
 
-# with open("templates/login.html", "r", encoding="utf-8") as f:
-#     login = f.read()
-# app.config['SECRET_KEY'] = ''  # put here JWT secret key
-# app.config['postgresql.sql'] = 'postgresql://postgres:example@localhost/postgres'
-# db = SQLAlchemy(app)
-
 @app.route('/favicon.ico')
 def favicon():
     return ''
-
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-
-        existing_user = User.query.filter_by(username=username).first()
-        if existing_user:
-            flash('Username already exists. Please choose a different one.', 'danger')
-        else:
-            hashed_password = generate_password_hash(password, method='sha1')
-            new_user = User(username=username, password=hashed_password)
-            db.session.add(new_user)
-            db.session.commit()
-            flash('Registration successful! Please log in.', 'success')
-            return redirect(url_for('login'))
-
-    return render_template('register.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -49,6 +27,7 @@ def login():
         req = requests.post("http://localhost:5000/api/v1/login", json={"username": username, "password": password})
         print(req.status_code)
         if req.status_code == 200:
+            session['username'] = username
             session['access_token'] = req.json()['access_token']
             session['refresh_token'] = req.json()['refresh_token']
             print(req.json())
@@ -64,25 +43,57 @@ def dashboard():
         api_response = requests.get("http://localhost:5000/api/v1/views_report_films", headers={"Authorization": f"Bearer {session['access_token']}"})
         
         if api_response.status_code == 200:
-            data = api_response.json()
+            x = [
+                {'views': 70, 'title': "hello"},
+                {'views': 20, 'title': "world"},
+                {'views': 10, 'title': "foo"},
+            ]
 
             # Filter data based on keywords
             keyword = request.args.get('title', default=None)
             if keyword:
-                filtered_data = [item for item in data if keyword.lower() in item['views'].lower()]
+                filtered_data = [item for item in x if keyword.lower() in item['title'].lower()]
             else:
-                filtered_data = data
-            print("aaaaaaaaaaaaa")
-            print(filtered_data)
+                filtered_data = x
+
             # Create Bokeh plot
-            p = figure(height=350, sizing_mode="stretch_width")
-            p.circle([i for i in range(len(filtered_data))], [item['views'] for item in filtered_data], size=20, color="navy", alpha=0.5)
+            # p = figure(height=350, sizing_mode="stretch_width")
+            # p.circle([i for i in range(len(filtered_data))], [item['views'] for item in filtered_data], size=20, color="navy", alpha=0.5)
+            # graph = figure(title = "Bokeh Vertical Bar Graph")
+            # graph.xaxis.axis_label = "title"
+            # graph.yaxis.axis_label = "views"
+            #x = ['A', 'B', 'C', 'D', 'E'] 
+            x = []
+
+            for item in filtered_data:
+                x.append(item['title'])
+
+            #y = [10, 20, 30]
+            y = []
+
+            for item in filtered_data:
+                y.append(item['views'])
+
+            source = ColumnDataSource(data=dict(x=x, y=y))
+            p = figure(x_range=x)
+            p.vbar(x='x', top='y', width=0.9, source=source) 
+            hover = HoverTool(tooltips=[("Value", "@y")]) 
+            p.add_tools(hover) 
             
+            for item in filtered_data:
+                print(item)
+                print(item['title'])
+                print(item['views'])
+                        # Generate Bokeh components
             script, div = components(p)
-            return render_template('dashboard.html', script=script, div=div, data=filtered_data)
+
+            # Pass data to the template
+            output_file("dashboard.html")
+            return render_template('dashboard.html', script=script, div=div, data=filtered_data, username=session.get('username'))
         else:
             print(api_response.status_code)
             flash('Error fetching data from the API', 'danger')
             return "well, not well"
     else:
         return redirect(url_for('login'))
+    

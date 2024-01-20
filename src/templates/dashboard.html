@@ -3,19 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.bokeh.org/bokeh/release/bokeh-3.3.2.min.js"></script>
+    {{ script | safe }}
 </head>
 <body class="bg-gray-100">
-    {% with messages = get_flashed_messages() %}
-    {% if messages %}
-        <ul class=flashes>
-        {% for message in messages %}
-        <li>{{ message }}</li>
-        {% endfor %}
-        </ul>
-    {% endif %}
-    {% endwith %}
-    {% block body %}{% endblock %}
     <div class="container mx-auto">
         <h1 class="text-center py-4 text-3xl font-bold">Statistics</h1> 
 
@@ -23,13 +16,12 @@
             <div class="w-full md:w-1/2 px-4 mb-4 md:mb-0">
                 <h4 class="text-center text-xl font-semibold">Movies</h4> 
                 {{ div | safe }}
-                {{ script | safe }}
             </div> 
         </div>
 
         <div class="mt-8">
             <h2 class="text-2xl font-bold">Dashboard</h2>
-            <p class="mb-4">Welcome, {{ session['email'] }}!</p>
+            <p class="mb-4">Welcome, {{ username }}!</p>
             <p>Please <a href="{{ url_for('login') }}" class="text-blue-500">log in</a>.</p>
         </div>
     </div>
