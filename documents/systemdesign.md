@@ -30,6 +30,8 @@ The backups should be copied to the off-site disaster recovery media at least on
 
 The backups should be retained for a maximum of one week.
 
+You can use the ```restore.sh``` script to restore a backup. But make sure to stop docker first and it may cause issues when restoring.
+
 ## API
 
 The API will function as a middleman system between the front-end and the database and will satisfy at least the following conditions:
