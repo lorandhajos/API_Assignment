@@ -9,23 +9,14 @@ from sqlalchemy.sql import text
 from ..utils import decrypt, generate_response, get_db_engine
 
 class AccountSchema(Schema):
-    email = fields.Email(required=True)
-    password = fields.String(required=True)
-    payment_method = fields.String(required=True)
-    blocked = fields.Boolean(required=True)
-    login_attempts = fields.Integer(required=True)
-    last_login = fields.Date(required=True)
-    subscription_id = fields.Integer(required=True)
-
-class AccountResponseSchema(Schema):
-    email = fields.Email(required=True)
-    password = fields.String(required=True)
-    payment_method = fields.String(required=True)
-    blocked = fields.Boolean(required=True)
-    login_attempts = fields.Integer(required=True)
-    last_login = fields.Date(required=True)
-    subscription_id = fields.Integer(required=True)
     account_id = fields.Integer(required=True)
+    email = fields.Email(required=True)
+    password = fields.String(required=True)
+    payment_method = fields.String(required=True)
+    blocked = fields.Boolean(required=True)
+    login_attempts = fields.Integer(required=True)
+    last_login = fields.Date(required=True)
+    subscription_id = fields.Integer(required=True)
 
 class Account(MethodView):
     @jwt_required(optional=False)
@@ -47,9 +38,9 @@ class Account(MethodView):
                 description: Account created
                 content:
                     application/json:
-                        schema: AccountResponseSchema
+                        schema: AccountSchema
                     application/xml:
-                        schema: AccountResponseSchema
+                        schema: AccountSchema
             400:
                 description: Bad request
                 content:
@@ -71,6 +62,7 @@ class Account(MethodView):
             return generate_response({"msg": "Bad username or password"}, request, 401)
 
         try:
+            id = request.json.get('id')
             email = request.json.get('email')
             password = request.json.get('password')
             payment_method = request.json.get('payment_method')
@@ -81,8 +73,13 @@ class Account(MethodView):
 
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                result = connection.execute(text(f"SELECT createAccount(:email, :password, :payment_method, :blocked, :login_attempts, :last_login, :subscription_id);"),
-                                            {"email": email, "password": password, "payment_method": payment_method, "blocked": blocked, "login_attempts": login_attempts, "last_login": last_login, "subscription_id": subscription_id}).first()
+                result = connection.execute(text(f"CALL createAccountElement(:id, :email, :password,
+                                                 :payment_method, :blocked, :login_attempts, :last_login,
+                                                 :subscription_id);"),
+                                            {"id": id, "email": email, "password": password,
+                                             "payment_method": payment_method, "blocked": blocked,
+                                             "login_attempts": login_attempts, "last_login": last_login,
+                                             "subscription_id": subscription_id}).first()
         except Exception:
             return generate_response({"msg": "Bad request"}, request, 400)
 
@@ -110,9 +107,9 @@ class Account(MethodView):
                 description: Account(s)
                 content:
                     application/json:
-                        schema: AccountResponseSchema
+                        schema: AccountSchema
                     application/xml:
-                        schema: AccountResponseSchema
+                        schema: AccountSchema
             400:
                 description: Bad request
                 content:
@@ -137,11 +134,15 @@ class Account(MethodView):
             engine = get_db_engine(data)
             with engine.connect() as connection:
                 if id is None:
-                    result = connection.execute(text(f"SELECT * FROM getAccounts();")).fetchall()
+                    result = connection.execute(text("SELECT * FROM selectaccount;")).fetchall()
                 else:
-                    result = connection.execute(text(f"SELECT * FROM getAccount(:id);"), {"id": id}).first()
+                    result = connection.execute(text("SELECT * FROM selectaccount WHERE account_id=:id"),
+                                                {"id": id}).first()
         except Exception:
             return generate_response({"msg": "Bad request"}, request, 400)
+
+        schema = AccountSchema()
+        result = schema.dump(result, many=True)
 
         return generate_response(result, request)
 
@@ -171,9 +172,9 @@ class Account(MethodView):
                 description: Account updated
                 content:
                     application/json:
-                        schema: AccountResponseSchema
+                        schema: AccountSchema
                     application/xml:
-                        schema: AccountResponseSchema
+                        schema: AccountSchema
             400:
                 description: Bad request
                 content:
@@ -205,8 +206,13 @@ class Account(MethodView):
 
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                result = connection.execute(text(f"SELECT updateAccount(:id, :email, :password, :payment_method, :blocked, :login_attempts, :last_login, :subscription_id);"),
-                                            {"id": id, "email": email, "password": password, "payment_method": payment_method, "blocked": blocked, "login_attempts": login_attempts, "last_login": last_login, "subscription_id": subscription_id}).first()
+                result = connection.execute(text(f"CALL updateAccountElement(:id, :email, :password,
+                                                 :payment_method, :blocked, :login_attempts, :last_login,
+                                                 :subscription_id);"),
+                                            {"id": id, "email": email, "password": password,
+                                             "payment_method": payment_method, "blocked": blocked,
+                                             "login_attempts": login_attempts, "last_login": last_login,
+                                             "subscription_id": subscription_id}).first()
         except Exception:
             return generate_response({"msg": "Bad request"}, request, 400)
 
@@ -234,9 +240,9 @@ class Account(MethodView):
                 description: Account deleted
                 content:
                     application/json:
-                        schema: AccountResponseSchema
+                        schema: AccountSchema
                     application/xml:
-                        schema: AccountResponseSchema
+                        schema: AccountSchema
             400:
                 description: Bad request
                 content:
@@ -260,7 +266,7 @@ class Account(MethodView):
         try:
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                result = connection.execute(text(f"SELECT deleteAccount(:id);"), {"id": id}).first()
+                result = connection.execute(text("CALL deleteAccountElement(:id)"), {"id": id}).first()
         except Exception:
             return generate_response({"msg": "Bad request"}, request, 400)
 

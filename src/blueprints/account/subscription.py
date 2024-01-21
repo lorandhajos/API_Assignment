@@ -66,7 +66,7 @@ class Subscription(MethodView):
 
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                result = connection.execute(text("SELECT createSubscription(:description, :subscription_price);"),
+                result = connection.execute(text("SELECT createSubscriptionElement(:description, :subscription_price);"),
                                             {"description": description, "subscription_price": subscription_price}).first()
         except Exception:
             return generate_response({"msg": "Bad request"}, request, 400)
@@ -114,9 +114,16 @@ class Subscription(MethodView):
         try:
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                result = connection.execute(text("SELECT * FROM subscription;")).fetchall()
+                if id is None:
+                    result = connection.execute(text("SELECT * FROM selectsubscription")).all()
+                else:
+                    result = connection.execute(text("SELECT * FROM selectsubscription WHERE subscription_id=:id"),
+                                                {"id": id}).first()
         except Exception:
             return generate_response({"msg": "Bad request"}, request, 400)
+
+        schema = SubscriptionResponseSchema()
+        result = schema.dump(result, many=True)
 
         return generate_response(result, request)
 
@@ -175,7 +182,7 @@ class Subscription(MethodView):
 
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                result = connection.execute(text("SELECT updateSubscription(:id, :description, :subscription_price);"),
+                result = connection.execute(text("SELECT updateSubscriptionElement(:id, :description, :subscription_price);"),
                                             {"id": id, "description": description, "subscription_price": subscription_price}).first()
         except Exception:
             return generate_response({"msg": "Bad request"}, request, 400)
@@ -230,7 +237,7 @@ class Subscription(MethodView):
         try:
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                result = connection.execute(text("SELECT deleteSubscription(:id);"),
+                result = connection.execute(text("SELECT deleteSubscriptionElement(:id);"),
                                             {"id": id}).first()
         except Exception:
             return generate_response({"msg": "Bad request"}, request, 400)

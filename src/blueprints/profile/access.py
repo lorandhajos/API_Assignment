@@ -66,10 +66,10 @@ class AccessFilms(MethodView):
         try:
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                current_age = connection.execute(text(f"SELECT getAgeProfile(:profile_id);"),
+                current_age = connection.execute(text("SELECT getAgeProfile(:profile_id)"),
                                                     {"profile_id": profile_id}).first()[0]
 
-                film_age = connection.execute(text(f"SELECT getAgeRestrictorFilms(:film_id)"),
+                film_age = connection.execute(text("SELECT getAgeRestrictorFilms(:film_id)"),
                                             {"film_id": film_id}).first()[0]
         except Exception:
             return generate_response({"msg": "Bad request"}, request, 400)
@@ -131,10 +131,10 @@ class AccessSeries(MethodView):
         try:
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                current_age = connection.execute(text(f"SELECT getAgeProfile(:profile_id)"),
+                current_age = connection.execute(text("SELECT getAgeProfile(:profile_id)"),
                                                 {"profile_id": profile_id}).first()[0]
 
-                series_age = connection.execute(text(f"SELECT getAgeRestrictorSeries(:series_id);"),
+                series_age = connection.execute(text("SELECT getAgeRestrictorSeries(:series_id)"),
                                                 {"series_id": series_id}).first()[0]
         except Exception:
             return generate_response({"msg": "Bad request"}, request, 400)

@@ -62,7 +62,9 @@ class Movies(MethodView):
         try:
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                result = connection.execute(text(""))
+                result = connection.execute(text("CALL createMovieElement(:id, :title, :duration, :views)",
+                                                 {"id": request.json.get('id'), "title": request.json.get('title'),
+                                                  "duration": request.json.get('duration'), "views": 0}))
         except Exception:
             return generate_response({"msg": "Bad request"}, request, 400)
 
@@ -109,9 +111,16 @@ class Movies(MethodView):
         try:
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                result = connection.execute(text(""))
+                if id is None:
+                    result = connection.execute(text("SELECT * FROM selectmovie()"))
+                else:
+                    result = connection.execute(text("SELECT * FROM selectmovie WHERE movie_id=:id"),
+                                                {"id": id})
         except Exception:
             return generate_response({"msg": "Bad request"}, request, 400)
+
+        schema = MovieResponseSchema()
+        result = schema.dump(result, many=True)
 
         return generate_response(result, 201)
 
@@ -159,7 +168,9 @@ class Movies(MethodView):
         try:
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                result = connection.execute(text(""))
+                result = connection.execute(text("CALL updateMovieElement(:id, :title, :duration, :views)",
+                                                 {"id": request.json.get('id'), "title": request.json.get('title'),
+                                                  "duration": request.json.get('duration'), "views": 0}))
         except Exception:
             return generate_response({"msg": "Bad request"}, request, 400)
 
