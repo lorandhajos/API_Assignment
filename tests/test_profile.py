@@ -2,7 +2,7 @@ import unittest
 
 import requests
 
-class TestAccount(unittest.TestCase):
+class TestProfile(unittest.TestCase):
     def setUp(self):
         credentials = {"username": "postgres", "password": "example"}
         login_url = "http://localhost/api/v1/login"
@@ -11,65 +11,65 @@ class TestAccount(unittest.TestCase):
 
         self.token = response.json().get('access_token')
 
-    def test_get_account(self):
+    def test_get_profile(self):
         headers = {
             'Accept': 'application/json',
             'Authorization': f'Bearer {self.token}'
         }
-        result = requests.get('http://localhost/api/v1/account', headers=headers)
+        result = requests.get('http://localhost/api/v1/profile', headers=headers)
 
         self.assertEqual(result.status_code, 200)
 
-    def test_get_account_by_id(self):
+    def test_get_profile_by_id(self):
         headers = {
             'Accept': 'application/json',
             'Authorization': f'Bearer {self.token}'
         }
-        result = requests.get('http://localhost/api/v1/account/1/', headers=headers)
+        result = requests.get('http://localhost/api/v1/profile/1/', headers=headers)
 
         self.assertEqual(result.status_code, 200)
 
-    def test_post_account(self):
+    def test_post_profile(self):
         headers = {
             'Accept': 'application/json',
             'Authorization': f'Bearer {self.token}'
         }
         data = {
-            "email": "example@email.com",
-            "password": "example",
-            "payment_method": "example",
-            "blocked": False,
-            "login_attempts": 0,
-            "last_login": "2021-01-01",
-            "subscription_id": 1
+            "account_id": 0,
+            "age": 0,
+            "history_id": 0,
+            "language": "string",
+            "profile_child": True,
+            "profile_image": "string",
+            "watchlist_id": 0
         }
-        result = requests.post('http://localhost/api/v1/account', headers=headers, json=data)
+        result = requests.post('http://localhost/api/v1/profile', headers=headers, json=data)
 
         self.assertEqual(result.status_code, 200)
 
-    def test_put_account(self):
+    def test_put_profile(self):
         headers = {
             'Accept': 'application/json',
             'Authorization': f'Bearer {self.token}'
         }
         data = {
-            "email": "example@email.com",
-            "password": "example",
-            "payment_method": "example",
-            "blocked": False,
-            "login_attempts": 0,
-            "last_login": "2021-01-01",
-            "subscription_id": 1
+            "account_id": 0,
+            "age": 0,
+            "history_id": 0,
+            "language": "string",
+            "profile_child": True,
+            "profile_image": "string",
+            "watchlist_id": 0
         }
-        result = requests.put('http://localhost/api/v1/account', headers=headers, json=data)
+        result = requests.put('http://localhost/api/v1/profile/1/', headers=headers, json=data)
 
         self.assertEqual(result.status_code, 200)
 
-    def test_delete_account(self):
+    def test_delete_profile(self):
         headers = {
             'Accept': 'application/json',
             'Authorization': f'Bearer {self.token}'
         }
-        result = requests.delete('http://localhost/api/v1/account', headers=headers)
+        result = requests.delete('http://localhost/api/v1/profile', headers=headers)
 
         self.assertEqual(result.status_code, 200)
