@@ -568,6 +568,58 @@ def country_report_country_of_users():
 
     return jsonify(countryOfUsers)
 
+@app.route('/preference_input/<int:inter>/<int:profile_id>', endpoint='preference_input', methods=['POST'])
+@jwt_required(optional=False)
+def preference_input(inter, profile_id):
+    """
+    Preference input
+    ---
+    post:
+        description: gggg
+        security:
+            - JWT: []
+        parameters:
+            - in: path
+              name: inter
+              schema:
+                type: integer
+              required: true
+              description: integer id
+            - in: path
+              name: profile_id
+              schema:
+                type: integer
+              required: true
+              description: profile id
+        responses:
+            200:
+                description: Interest inputed
+                content:
+                    application/json:
+                        schema: WatchlistSchema
+            400:
+                description: Bad data provided
+                content:
+                    application/json:
+                        schema: ErrorResponseSchema
+    """
+    data = json.loads(get_jwt_identity())
+
+    nonce = b64decode(data["nonce"])
+    ciphertext = b64decode(data["ciphertext"])
+
+    cipher = ChaCha20.new(key=key, nonce=nonce)
+    plaintext = cipher.decrypt(ciphertext).decode('utf-8')
+    engine = get_db_engine(plaintext)
+    with engine.connect() as connection:
+        # result = 
+        connection.execute(text(f"CALL inputInterest(:profile_id, :inter);"),
+                                            ({"profile_id": profile_id, "inter": inter}))
+    return('', 204)
+
+# (text(f"SELECT getAgeRestrictorSeries(:series_id);"),
+                                        # {"series_id": series_id}).first()[0]
+
 with app.test_request_context():
     spec.path(view=login)
     spec.path(view=refresh)
@@ -581,3 +633,4 @@ with app.test_request_context():
     spec.path(view=views_report_series_title)
     spec.path(view=country_report_n_of_users)
     spec.path(view=country_report_country_of_users)
+    spec.path(view=preference_input)

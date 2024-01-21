@@ -127,3 +127,16 @@ $$
    END;
 $$
 LANGUAGE plpgsql;
+
+CREATE OR REPLACE PROCEDURE inputInterest(
+  IN p_profileID integer,
+  IN p_genre_id integer
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  SET NOCOUNT ON;
+  INSERT INTO interests (profile_id, genre_id)
+  VALUES (p_profileID, p_genre_id);
+END;
+$$;
