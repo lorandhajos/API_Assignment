@@ -60,6 +60,23 @@ The API connects to the database with psycopg using a connection string.
 
 User password are stored in the database in a hashed and salted format. The user privileges are managed by the database making it harder to access privileged information by accident.
 
+We implemented an interesting way to handle user sessions. That we consider secure by our threat model.
+We decided to go this route because we wanted to maintain the user roles in the DBMS for extra security.
+
+When the user logs in, their input is validated. We only accept letters, numbers, and underscores in both password and username. This reduces the possible password complexity but that can be mitigated by using longer passwords. The login information is then encrypted on the server and stored in the JWT token, this is used as a unique identity because we had to work around multithreading, and this was the fastest to implement solution that we have identified. This might sound insecure but here's the reason why why think it's not. First and foremost, in a production environment the requests would be protected by TLS when it transit. The JWT token protects against modifying it's contents, and the login information is encrypted.
+
+In our view, the only way to recover the password is to either, have access to the server or to have full access to the user's computer and log their inputs. That, for us is out of our scope.
+
+To demonstrate here's an example of a JWT token.
+
+```{"alg":"HS256","typ":"JWT"}{"fresh":false,"iat":1705842060,"jti":"17d4bace-eee4-4921-addc-dfc4a584939e","type":"access","sub":"{\"nonce\": \"dScKqOy0cUY=\", \"ciphertext\": \"D24w/JfHdOFXjEDMttJ90Q==\"}","nbf":1705842060,"csrf":"3864eba3-e0d9-4822-86e4-7bc22471698e","exp":1705845660}```
+
+Here, ```sub``` contains the encrypted information.
+
+```{"nonce": "dScKqOy0cUY=", "ciphertext": "D24w/JfHdOFXjEDMttJ90Q=="}```
+
+Please, feel free to decode the above strings with base64, and see for yourself that we are not leaking information.
+
 ### Class Diagram
 
 ```mermaid
