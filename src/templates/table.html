@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Table</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+</head>
+<body class="bg-gray-100">
+    <!-- Sidebar -->
+    <div class="bg-gray-800 text-white h-screen w-30 fixed left-0 flex flex-col justify-start">
+        <button class="py-4 px-2 hover:bg-gray-700 focus:outline-none" onclick="location.href='dashboard.html'">
+            Dashboard
+        </button>
+        <button class="py-4 px-2 hover:bg-gray-700 focus:outline-none" onclick="location.href='table.html'">
+            Table
+        </button>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container mx-auto ml-40 mt-8">
+        <h1 class="text-3xl font-bold">Table Page</h1>
+        <table class="table-auto mt-4">
+            <thead>
+                <tr>
+                    {% for header in headers %}
+                        <th class="px-4 py-2">{{ header }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    {% for row in tableData %}
+                        <td class="border px-4 py-2">{{ row }}</td>
+                    {% endfor %}
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</body>
+</html>

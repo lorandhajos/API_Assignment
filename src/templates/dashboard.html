@@ -3,34 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.bokeh.org/bokeh/release/bokeh-3.3.2.min.js"></script>
+    {{ script | safe }}
+    {{ script2 | safe }}
+    {{ script3 | safe }}
 </head>
 <body class="bg-gray-100">
-    {% with messages = get_flashed_messages() %}
-    {% if messages %}
-        <ul class=flashes>
-        {% for message in messages %}
-        <li>{{ message }}</li>
-        {% endfor %}
-        </ul>
-    {% endif %}
-    {% endwith %}
-    {% block body %}{% endblock %}
-    <div class="container mx-auto">
-        <h1 class="text-center py-4 text-3xl font-bold">Statistics</h1> 
+    <!-- Sidebar -->
+    <div class="bg-gray-800 text-white h-screen w-30 fixed left-0 flex flex-col justify-start">
+        <button class="py-4 px-2 hover:bg-gray-700 focus:outline-none" onclick="location.href='dashboard'">
+            Dasboard
+        </button>
+        <button class="py-4 px-2 hover:bg-gray-700 focus:outline-none" onclick="location.href='table'">
+            Table
+        </button>
+    </div>
 
+    <!-- Main Content -->
+    <div class="container mx-auto ml-40">
+        <h1 class="text-center py-4 text-3xl font-bold">Statistics</h1> 
+        <div class="mt-8">
+            <h2 class="text-2xl font-bold">Dashboard</h2>
+            <p class="mb-4">Welcome, {{ username }}!</p>
+        </div>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <ul class=flashes>
+                {% for message in messages %}
+                <li>{{ message }}</li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+        {% block body %}{% endblock %}
         <div class="flex flex-wrap mb-5">
             <div class="w-full md:w-1/2 px-4 mb-4 md:mb-0">
                 <h4 class="text-center text-xl font-semibold">Movies</h4> 
                 {{ div | safe }}
-                {{ script | safe }}
+            </div>
+            <div class="w-full md:w-1/2 px-4 mb-4 md:mb-0">
+                <h4 class="text-center text-xl font-semibold">Series</h4> 
+                {{ div2 | safe }}
             </div> 
-        </div>
-
-        <div class="mt-8">
-            <h2 class="text-2xl font-bold">Dashboard</h2>
-            <p class="mb-4">Welcome, {{ session['email'] }}!</p>
-            <p>Please <a href="{{ url_for('login') }}" class="text-blue-500">log in</a>.</p>
+            <div class="w-full md:w-1/2 px-4 mb-4 md:mb-0">
+                <h4 class="text-center text-xl font-semibold">Countries</h4> 
+                {{ div3 | safe }}
+            </div> 
         </div>
     </div>
 
