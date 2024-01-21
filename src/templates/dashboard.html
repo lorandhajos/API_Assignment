@@ -27,8 +27,17 @@
         <div class="mt-8">
             <h2 class="text-2xl font-bold">Dashboard</h2>
             <p class="mb-4">Welcome, {{ username }}!</p>
-            <p>Please <a href="{{ url_for('login') }}" class="text-blue-500">log in</a>.</p>
         </div>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <ul class=flashes>
+                {% for message in messages %}
+                <li>{{ message }}</li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+        {% block body %}{% endblock %}
         <div class="flex flex-wrap mb-5">
             <div class="w-full md:w-1/2 px-4 mb-4 md:mb-0">
                 <h4 class="text-center text-xl font-semibold">Movies</h4> 

@@ -1,13 +1,12 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
-from werkzeug.security import generate_password_hash, check_password_hash
+from flask import Flask, render_template, request, redirect, url_for, flash, session
 from bokeh.embed import components
-from bokeh.plotting import figure, output_file, show
+from bokeh.plotting import figure, output_file
 from bokeh.models import ColumnDataSource, HoverTool
 from bokeh.palettes import Paired
 from bokeh.transform import cumsum
 from math import pi
 import pandas as pd
-from bokeh.io import output_file, show
+from bokeh.io import output_file
 import requests
 
 app = Flask(__name__)
@@ -97,21 +96,13 @@ def dashboard():
             hover = HoverTool(tooltips=[("People", "@y")])
             p2.add_tools(hover)
 
-            print(filtered_data_country_number)
-            total = 0
-            for item in filtered_data_country_number:
-                total += item['number']
-                print(total)
-            
-
+            # combine country and number to use it as one dictionary
             combined_response = {}
-
             for number_response, country_response in zip(filtered_data_country_number, filtered_data_country):
                 country_name = country_response['country']
                 number_value = number_response['number']
                 combined_response[country_name] = number_value
 
-            print(combined_response)
             #Pie chart for countries
             data = pd.Series(combined_response).reset_index(name='value').rename(columns={'index':'country'})
             data['angle'] = data['value']/data['value'].sum() * 2*pi
@@ -128,11 +119,11 @@ def dashboard():
             pieChart.axis.visible=False
             pieChart.grid.grid_line_color = None
 
-            
             # Generate Bokeh components
             script, div = components(p)
             script2, div2 = components(p2)
             script3, div3 = components(pieChart)
+
             # Pass data to the template
             output_file("dashboard.html")
             return render_template('dashboard.html', script=script, div=div, script2=script2, div2=div2, script3=script3, div3=div3, username=session.get('username'))
@@ -143,6 +134,22 @@ def dashboard():
             print(api_responce_series_views.status_code)
             print(api_responce_country.status_code)
             print(api_responce_country_number.status_code)
+            flash('Error fetching data from the API', 'danger')
+            return "well, not well"
+    else:
+        return redirect(url_for('login'))
+
+@app.route('/table')
+def table():
+    if 'access_token' in session:
+        api_response = requests.get("http://localhost:5000/api/v1/views_report_series_title", headers={"Authorization": f"Bearer {session['access_token']}"})
+        if api_response.status_code == 200:
+            x = api_response.json()
+            headers = []
+            tableData = []
+            return render_template('table.html', x=x, headers=headers, tableData=tableData, username=session.get('username'))
+        else:
+            print(api_response.status_code)
             flash('Error fetching data from the API', 'danger')
             return "well, not well"
     else:

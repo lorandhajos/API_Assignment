@@ -8,7 +8,7 @@
 </head>
 <body class="bg-gray-100">
     <!-- Sidebar -->
-    <div class="bg-gray-800 text-white h-screen w-30 fixed left-0 flex flex-col justify-between">
+    <div class="bg-gray-800 text-white h-screen w-30 fixed left-0 flex flex-col justify-start">
         <button class="py-4 px-2 hover:bg-gray-700 focus:outline-none" onclick="location.href='dashboard.html'">
             Dashboard
         </button>
@@ -20,18 +20,19 @@
     <!-- Main Content -->
     <div class="container mx-auto ml-40 mt-8">
         <h1 class="text-3xl font-bold">Table Page</h1>
-        
         <table class="table-auto mt-4">
             <thead>
                 <tr>
-                    <th class="px-4 py-2">Header 1</th>
-                    <th class="px-4 py-2">Header 2</th>
+                    {% for header in headers %}
+                        <th class="px-4 py-2">{{ header }}</th>
+                    {% endfor %}
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td class="border px-4 py-2">Data 1</td>
-                    <td class="border px-4 py-2">Data 2</td>
+                    {% for row in tableData %}
+                        <td class="border px-4 py-2">{{ row }}</td>
+                    {% endfor %}
                 </tr>
             </tbody>
         </table>
