@@ -521,7 +521,7 @@ BEGIN
 END;
 $$;
 
-/*clss series*/
+/*class series*/
 
 CREATE OR REPLACE PROCEDURE createSeriesElement(
   IN p_series_id integer,
