@@ -57,7 +57,9 @@ INSERT INTO "genre" ("genre_id", "name", "age_restriction") VALUES
 (1,	'Horror',	18),
 (2,	'Comedy',	0),
 (3,	'Action',	13),
-(4,	'Adventure',	8);
+(4,	'Adventure',	8),
+(5,	'Soap opera',	16),
+(6,	'Documentary',	12);
 
 DROP TABLE IF EXISTS "history";
 DROP SEQUENCE IF EXISTS history_history_id_seq;
@@ -167,8 +169,8 @@ CREATE TABLE "public"."profile" (
 
 INSERT INTO "profile" ("profile_id", "account_id", "profile_image", "profile_child", "age", "language", "watchlist_id", "history_id", "country") VALUES
 (1,	1,	'placeholder.jpeg',	't',	12,	'English',	1,	1,	'Brazil'),
-(3,	3,	'placeholder.jpeg',	'f',	18,	'English',	3,	3,	'UK'),
-(2,	2,	'placeholder.jpeg',	'f',	20,	'English',	2,	2,	'Netherlands');
+(2,	2,	'placeholder.jpeg',	'f',	20,	'English',	2,	2,	'Netherlands'),
+(3,	3,	'placeholder.jpeg',	'f',	18,	'English',	3,	3,	'Brazil');
 
 DROP TABLE IF EXISTS "series";
 DROP SEQUENCE IF EXISTS series_series_id_seq;
@@ -287,4 +289,4 @@ ALTER TABLE ONLY "public"."watchlist_movies" ADD CONSTRAINT "fk_watchlist" FOREI
 ALTER TABLE ONLY "public"."watchlist_series" ADD CONSTRAINT "fk_series" FOREIGN KEY (series_id) REFERENCES series(series_id) NOT DEFERRABLE;
 ALTER TABLE ONLY "public"."watchlist_series" ADD CONSTRAINT "fk_watchlist" FOREIGN KEY (watchlist_id) REFERENCES watchlist(watchlist_id) NOT DEFERRABLE;
 
--- 2024-01-16 18:55:29.151931+00
+-- 2024-01-21 15:06:23.189863+00
