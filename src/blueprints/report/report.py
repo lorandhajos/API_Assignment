@@ -6,7 +6,7 @@ from flask_jwt_extended import get_jwt_identity, jwt_required
 from marshmallow import Schema, fields
 from sqlalchemy.sql import text
 
-from .utils import decrypt, generate_response, get_db_engine
+from ..utils import decrypt, generate_response, get_db_engine
 
 class ReportNamesSchema(Schema):
     title = fields.String(required=True)
@@ -15,7 +15,7 @@ class ReportViewsSchema(Schema):
     views = fields.Integer(required=True)
 
 class ReportCountrySchema(Schema):
-    country = fields.String(required=True)
+    number = fields.String(required=True)
 
 class FilmNames(MethodView):
     @jwt_required(optional=False)
@@ -23,6 +23,8 @@ class FilmNames(MethodView):
         """
         Film Names Report
         ---
+        tags:
+            - report
         description: These 2 functions fetch a total view count with the name
         security:
             - JWT: []
@@ -54,6 +56,8 @@ class FilmViews(MethodView):
         """
         Film Views Report
         ---
+        tags:
+            - report
         description: These 2 functions fetch a total view count with the name
         security:
             - JWT: []
@@ -85,6 +89,8 @@ class SeriesNames(MethodView):
         """
         Series Names Report
         ---
+        tags:
+            - report
         description: These 2 functions fetch a total view count with the name
         security:
             - JWT: []
@@ -116,6 +122,8 @@ class SeriesViews(MethodView):
         """
         Series Views Report
         ---
+        tags:
+            - report
         description: These 2 functions fetch a total view count with the name
         security:
             - JWT: []
@@ -142,10 +150,13 @@ class SeriesViews(MethodView):
         return generate_response(totalViews, request)
 
 class Country(MethodView):
+    @jwt_required(optional=False)
     def get(self):
         """
         Country Report
         ---
+        tags:
+            - report
         description: This is the function which returns the total count of the countries
         security:
             - JWT: []
@@ -160,8 +171,11 @@ class Country(MethodView):
         """
         engine = get_db_engine()
         with engine.connect() as connection:
-            result = connection.execute(text(f"SELECT getProfileCountry()")).all()
+            result = connection.execute(text(f"SELECT getNOfUsersPerCountry()")).all()
 
-        countryCount = [dict(row) for row in result]
+        totalNumberOfUsers = []
 
-        return generate_response(countryCount, request)
+        for number in result:
+            totalNumberOfUsers.append({"number" : number[0]})
+
+        return generate_response(totalNumberOfUsers, request)

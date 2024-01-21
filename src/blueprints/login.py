@@ -18,6 +18,8 @@ class Login(MethodView):
         """
         Login
         ---
+        tags:
+            - login
         description: Login endpoint
         requestBody:
             content:
@@ -56,7 +58,7 @@ class Login(MethodView):
             engine.connect()
 
             result = encrypt(data)
-        except Exception as e:
+        except Exception:
             return generate_response({"msg": "Bad username or password"}, request, 401)
 
         access_token = create_access_token(identity=result)

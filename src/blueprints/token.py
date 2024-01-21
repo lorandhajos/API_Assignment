@@ -9,12 +9,14 @@ from .utils import generate_response
 class RefreshResponseSchema(Schema):
     access_token = fields.String(required=True)
 
-class Refresh(MethodView):
+class Token(MethodView):
     @jwt_required(refresh=True)
     def post(self):
         """
         Refresh Token
         ---
+        tags:
+            - token
         description: Token refresh endpoint
         security:
             - JWT: []
