@@ -195,8 +195,13 @@ We decided to use PostgreSQL for our database because none in our team had any e
 
 ![ERD](erd.jpg "ERD")
 
-### Views
+### Views, stored procedures, triggers, functions
+For this project we have used extensively several elements of postgres which allow to preduild querries. Mostly functions and stored procedures were implemented for the APIs.
 
-### Stored Procedures
+Most of the prebuild querries are functions and stored procedures. The reson why this was chosen is because functions over views or stored procedures is because functions have several advantages over views and stored procedures, at least in the cases that they were used.
 
-### Triggers
+One of the main advantage of a function over a view is that a function can accept parameters, while the view cant. This means that functions are clearly better in cases where a specific piece of data needs to be extracted, such as the age of a specific profile (because the id is provided as a parameter, which views cant accept). However, some of the postgres functions that were created do not have any parameters. They could be replaced with a view, however for the sake of standartisation, functions were still implemented.
+
+For our case the triggers are not really helpful. Triggers trigger whenever a specific event occurs such as select querry. This functionality is not needed for the sake of the project. One of the main reasons is that the database api user has no rights to execute querries on the tables(for data security and integrity), the api user can only execute functions and that would make the trigger redundant.
+
+Stored procedures are used but not that extensively. Compared to functions they do not have a return value of any sort, which makes them useful for querries which change the database, but not the ones which extract information. Thus they are used for insert and update querries.
