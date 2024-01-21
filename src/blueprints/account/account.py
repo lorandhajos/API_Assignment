@@ -73,9 +73,9 @@ class Account(MethodView):
 
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                result = connection.execute(text(f"CALL createAccountElement(:id, :email, :password,
+                result = connection.execute(text("""CALL createAccountElement(:id, :email, :password,
                                                  :payment_method, :blocked, :login_attempts, :last_login,
-                                                 :subscription_id);"),
+                                                 :subscription_id);"""),
                                             {"id": id, "email": email, "password": password,
                                              "payment_method": payment_method, "blocked": blocked,
                                              "login_attempts": login_attempts, "last_login": last_login,
@@ -206,9 +206,9 @@ class Account(MethodView):
 
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                result = connection.execute(text(f"CALL updateAccountElement(:id, :email, :password,
+                result = connection.execute(text("""CALL updateAccountElement(:id, :email, :password,
                                                  :payment_method, :blocked, :login_attempts, :last_login,
-                                                 :subscription_id);"),
+                                                 :subscription_id);"""),
                                             {"id": id, "email": email, "password": password,
                                              "payment_method": payment_method, "blocked": blocked,
                                              "login_attempts": login_attempts, "last_login": last_login,
