@@ -17,7 +17,7 @@ app.config['SECRET_KEY'] = "secret"
 def favicon():
     return ''
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         username = request.form['username']
@@ -25,8 +25,8 @@ def login():
         # additional checks for the username and password
         if(username == '' or password == ''):
             flash('Please fill out the form!', 'danger')
-            return redirect(url_for('login'))
-        req = requests.post("http://localhost:5000/api/v1/login", json={"username": username, "password": password})
+            return redirect(url_for(''))
+        req = requests.post("http://localhost:5000/api/v1/login", json={"username": username, "password": password}, headers={"Accept": "application/json"})
         print(req.status_code)
         if req.status_code == 200:
             session['username'] = username
@@ -42,14 +42,12 @@ def login():
 @app.route('/dashboard')
 def dashboard():
     if 'access_token' in session:
-        api_response_views = requests.get("http://localhost:5000/api/v1/views_report_films_views", headers={"Authorization": f"Bearer {session['access_token']}"})
-        api_response_title = requests.get("http://localhost:5000/api/v1/views_report_films_names", headers={"Authorization": f"Bearer {session['access_token']}"})
-        api_responce_series_title = requests.get("http://localhost:5000/api/v1/views_report_series_title", headers={"Authorization": f"Bearer {session['access_token']}"})
-        api_responce_series_views = requests.get("http://localhost:5000/api/v1/views_report_series_views", headers={"Authorization": f"Bearer {session['access_token']}"})
-        api_responce_country = requests.get("http://localhost:5000/api/v1/country_report_country_of_users", headers={"Authorization": f"Bearer {session['access_token']}"})
-        api_responce_country_number = requests.get("http://localhost:5000/api/v1/country_report_n_of_users", headers={"Authorization": f"Bearer {session['access_token']}"})
-
-        if api_response_views.status_code and api_response_title.status_code and api_responce_series_title.status_code and api_responce_series_views.status_code and api_responce_country.status_code and api_responce_country_number.status_code == 200:
+        api_response_views = requests.get("http://localhost:5000/api/v1/report/views_report_films_views", headers={"Authorization": f"Bearer {session['access_token']}", "Accept": "application/json"})
+        api_response_title = requests.get("http://localhost:5000/api/v1/report/views_report_films_names", headers={"Authorization": f"Bearer {session['access_token']}", "Accept": "application/json"})
+        api_responce_series_title = requests.get("http://localhost:5000/api/v1/report/views_report_series_title", headers={"Authorization": f"Bearer {session['access_token']}", "Accept": "application/json"})
+        api_responce_series_views = requests.get("http://localhost:5000/api/v1/report/views_report_series_views", headers={"Authorization": f"Bearer {session['access_token']}", "Accept": "application/json"})
+        api_responce_country = requests.get("http://localhost:5000/api/v1/report/country", headers={"Authorization": f"Bearer {session['access_token']}", "Accept": "application/json"}).json()
+        if api_response_views.status_code and api_response_title.status_code and api_responce_series_title.status_code and api_responce_series_views.status_code:
             # Filter data based on keywords
             # keyword = request.args.get('title', default=None)
             # if keyword:
@@ -62,8 +60,8 @@ def dashboard():
             filtered_data_series_title = api_responce_series_title.json()
             filtered_data_series_views = api_responce_series_views.json()
 
-            filtered_data_country = api_responce_country.json()
-            filtered_data_country_number = api_responce_country_number.json()
+            # filtered_data_country = api_responce_country.json()
+            # filtered_data_country_number = api_responce_country_number.json()
 
             # Create Bokeh plot
             movie_title = []
@@ -95,18 +93,12 @@ def dashboard():
             p2.vbar(x='x', top='y', width=0.9, source=source_series)
             hover = HoverTool(tooltips=[("People", "@y")])
             p2.add_tools(hover)
-
-            # combine country and number to use it as one dictionary
-            combined_response = {}
-            for number_response, country_response in zip(filtered_data_country_number, filtered_data_country):
-                country_name = country_response['country']
-                number_value = number_response['number']
-                combined_response[country_name] = number_value
-
-            #Pie chart for countries
-            data = pd.Series(combined_response).reset_index(name='value').rename(columns={'index':'country'})
+            
+             #Pie chart for countries
+            data = pd.Series(api_responce_country).reset_index(name='value').rename(columns={'index':'country'})
+            print(data)
             data['angle'] = data['value']/data['value'].sum() * 2*pi
-            data['color'] = Paired[len(combined_response)]
+            data['color'] = Paired[len(api_responce_country)]
 
             pieChart = figure(height=350, title="Pie Chart", toolbar_location=None,
                     tools="hover", tooltips="@country: @value", x_range=(-0.5, 1.0))
@@ -126,7 +118,7 @@ def dashboard():
 
             # Pass data to the template
             output_file("dashboard.html")
-            return render_template('dashboard.html', script=script, div=div, script2=script2, div2=div2, script3=script3, div3=div3, username=session.get('username'))
+            return render_template('dashboard.html', script=script, div=div, script2=script2, div2=div2,script3=script3, div3=div3, username=session.get('username'))
         else:
             print(api_response_title.status_code)
             print(api_response_views.status_code)
@@ -137,21 +129,35 @@ def dashboard():
             flash('Error fetching data from the API', 'danger')
             return "well, not well"
     else:
-        return redirect(url_for('login'))
-
+        return redirect(url_for(''))
+    
 @app.route('/table')
 def table():
     if 'access_token' in session:
-        api_response = requests.get("http://localhost:5000/api/v1/views_report_series_title", headers={"Authorization": f"Bearer {session['access_token']}"})
-        if api_response.status_code == 200:
-            x = api_response.json()
-            headers = []
-            tableData = []
-            return render_template('table.html', x=x, headers=headers, tableData=tableData, username=session.get('username'))
-        else:
+        # Get the user's choice from the radio buttons
+        user_choice = request.args.get('FilmViews', 'FilmNames', 'SeriesViews')
+        API_ENDPOINTS = {'FilmViews': 'http://localhost:5000/api/v1/report/views_report_films_views',
+                         'FilmNames': 'http://localhost:5000/api/v1/report/views_report_films_names',
+                        'SeriesViews': 'http://localhost:5000/api/v1/report/views_report_series_views',
+        }
+        # Check if the user's choice is a valid option
+        if user_choice in API_ENDPOINTS:
+            api_endpoint = API_ENDPOINTS[user_choice]
+            # Make the API request
+            api_response = requests.get(api_endpoint, headers={"Authorization": f"Bearer {session['access_token']}", "Accept": "application/json"})
             print(api_response.status_code)
-            flash('Error fetching data from the API', 'danger')
-            return "well, not well"
+            if api_response.status_code == 200:
+                x = api_response.json()
+                headers = []
+                tableData = []
+                return render_template('table.html', x=x, headers=headers, tableData=tableData, username=session.get('username'))
+            else:
+                print(api_response.status_code)
+                flash('Error fetching data from the API', 'danger')
+                return "well, not well"
+        else:
+            flash('Invalid choice', 'danger')
+            return redirect(url_for('table'))
     else:
         return redirect(url_for('login'))
     

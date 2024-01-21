@@ -6,34 +6,51 @@
     <title>Table</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
 </head>
-<body class="bg-gray-100">
+<body class="bg-gray-100 font-sans flex">
+
     <!-- Sidebar -->
-    <div class="bg-gray-800 text-white h-screen w-30 fixed left-0 flex flex-col justify-start">
-        <button class="py-4 px-2 hover:bg-gray-700 focus:outline-none" onclick="location.href='dashboard.html'">
+    <div class="bg-gray-800 text-white h-screen w-30 flex flex-col justify-start p-4">
+        <button class="py-2 px-4 mb-4 hover:bg-gray-700 focus:outline-none" onclick="location.href='dashboard'">
             Dashboard
         </button>
-        <button class="py-4 px-2 hover:bg-gray-700 focus:outline-none" onclick="location.href='table.html'">
+        <button class="py-2 px-4 mb-4 hover:bg-gray-700 focus:outline-none" onclick="location.href='table'">
             Table
         </button>
     </div>
 
     <!-- Main Content -->
-    <div class="container mx-auto ml-40 mt-8">
-        <h1 class="text-3xl font-bold">Table Page</h1>
-        <table class="table-auto mt-4">
+    <div class="flex-1 container mx-auto mt-8 p-4">
+
+        <h1 class="text-3xl font-bold mb-4">Table Page</h1>
+
+        <!-- Form for selecting options -->
+        <form action="{{ url_for('table') }}" method="GET" class="mb-8">
+            <label for="choice" class="mr-2">Select an option:</label>
+            <select name="choice" id="choice" class="border rounded px-2 py-1">
+                <option value="FilmViews" selected>Film Views</option>
+                <option value="FilmNames">Film Names</option>
+                <option value="SeriesViews">Series Views</option>
+            </select>
+            <input type="submit" value="Submit" class="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 ml-2 cursor-pointer">
+        </form>
+
+        <!-- Table -->
+        <table class="table-auto w-full border">
             <thead>
                 <tr>
                     {% for header in headers %}
-                        <th class="px-4 py-2">{{ header }}</th>
+                        <th class="border px-4 py-2">{{ header }}</th>
                     {% endfor %}
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    {% for row in tableData %}
-                        <td class="border px-4 py-2">{{ row }}</td>
-                    {% endfor %}
-                </tr>
+                {% for row in tableData %}
+                    <tr>
+                        {% for cell in row %}
+                            <td class="border px-4 py-2">{{ cell }}</td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>
