@@ -20,8 +20,17 @@ flowchart LR
 For backups we suggest following the 3-2-1 rule.
 
 + Production data (Copy 1, Production server)
-+ Backup (Copy 2, GitHub repository)
-+ Disaster recovery off site (Copy 3, Cold storage)
++ Backup (Copy 2, On-site server)
++ Disaster recovery (Copy 3, Off-site server).
+
+We suggest using cron to automatically create a backup of the database daily using ```backup.sh```.
+The backup file should then be copied over to a separate on-site file storage server.
+
+The backups should be copied to the off-site disaster recovery media at least once a week.
+
+The backups should be retained for a maximum of one week.
+
+You can use the ```restore.sh``` script to restore a backup. But make sure to stop docker first and it may cause issues when restoring.
 
 ## API
 
@@ -50,6 +59,23 @@ The API connects to the database with psycopg using a connection string.
 #### Security and Authentication
 
 User password are stored in the database in a hashed and salted format. The user privileges are managed by the database making it harder to access privileged information by accident.
+
+We implemented an interesting way to handle user sessions. That we consider secure by our threat model.
+We decided to go this route because we wanted to maintain the user roles in the DBMS for extra security.
+
+When the user logs in, their input is validated. We only accept letters, numbers, and underscores in both password and username. This reduces the possible password complexity but that can be mitigated by using longer passwords. The login information is then encrypted on the server and stored in the JWT token, this is used as a unique identity because we had to work around multithreading, and this was the fastest to implement solution that we have identified. This might sound insecure but here's the reason why why think it's not. First and foremost, in a production environment the requests would be protected by TLS when it transit. The JWT token protects against modifying it's contents, and the login information is encrypted.
+
+In our view, the only way to recover the password is to either, have access to the server or to have full access to the user's computer and log their inputs. That, for us is out of our scope.
+
+To demonstrate here's an example of a JWT token.
+
+```{"alg":"HS256","typ":"JWT"}{"fresh":false,"iat":1705842060,"jti":"17d4bace-eee4-4921-addc-dfc4a584939e","type":"access","sub":"{\"nonce\": \"dScKqOy0cUY=\", \"ciphertext\": \"D24w/JfHdOFXjEDMttJ90Q==\"}","nbf":1705842060,"csrf":"3864eba3-e0d9-4822-86e4-7bc22471698e","exp":1705845660}```
+
+Here, ```sub``` contains the encrypted information.
+
+```{"nonce": "dScKqOy0cUY=", "ciphertext": "D24w/JfHdOFXjEDMttJ90Q=="}```
+
+Please, feel free to decode the above strings with base64, and see for yourself that we are not leaking information.
 
 ### Class Diagram
 
@@ -169,8 +195,13 @@ We decided to use PostgreSQL for our database because none in our team had any e
 
 ![ERD](erd.jpg "ERD")
 
-### Views
+### Views, stored procedures, triggers, functions
+For this project we have used extensively several elements of postgres which allow to preduild querries. Mostly functions and stored procedures were implemented for the APIs.
 
-### Stored Procedures
+Most of the prebuild querries are functions and stored procedures. The reson why this was chosen is because functions over views or stored procedures is because functions have several advantages over views and stored procedures, at least in the cases that they were used.
 
-### Triggers
+One of the main advantage of a function over a view is that a function can accept parameters, while the view cant. This means that functions are clearly better in cases where a specific piece of data needs to be extracted, such as the age of a specific profile (because the id is provided as a parameter, which views cant accept). However, some of the postgres functions that were created do not have any parameters. They could be replaced with a view, however for the sake of standartisation, functions were still implemented.
+
+For our case the triggers are not really helpful. Triggers trigger whenever a specific event occurs such as select querry. This functionality is not needed for the sake of the project. One of the main reasons is that the database api user has no rights to execute querries on the tables(for data security and integrity), the api user can only execute functions and that would make the trigger redundant.
+
+Stored procedures are used but not that extensively. Compared to functions they do not have a return value of any sort, which makes them useful for querries which change the database, but not the ones which extract information. Thus they are used for insert and update querries.

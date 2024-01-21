@@ -1,16 +1,21 @@
 ## Getting Started
 
-1. Rename .env.dist to .env
+1. Rename ```.env.dist``` to ```.env```
 
-2. Generate ```SECRET_KEY```
+2. Generate two keys using the following command
+
+> Make sure you have ```pycryptodome==3.20.0``` installed
 
 ```
-pip install pycryptodome==3.20.0
 python -c "from base64 import b64encode; from Crypto.Random import get_random_bytes; print(b64encode(get_random_bytes(32)))"
 ```
 
-3. Copy output from the commands above into the ```SECRET_KEY``` variable in .env
+3. Fill in the values for ```JWT_SECRET_KEY``` and ```SECRET_KEY``` in .env
 
-4. docker-compose up
+4. Set a desired username and password for the super admin. And a strong password!
 
-The frontent is accessible on ```localhost:80/```, and the api docs are accessible on ```localhost:80/api/v1/docs```.
+> Please note: for security reasons it is not allowed to login using the super admin using the API.
+
+5. ```docker-compose up```
+
+6. The frontend is accessible on port ```80```, the api docs are accessible on ```/api/v1/docs```.

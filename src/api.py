@@ -1,19 +1,27 @@
-import json
 import os
-from base64 import b64encode, b64decode
 from datetime import timedelta
 
 from apispec import APISpec
 from apispec.ext.marshmallow import MarshmallowPlugin
 from apispec_webframeworks.flask import FlaskPlugin
-from Crypto.Cipher import ChaCha20
 from dotenv import load_dotenv
 from flask import Flask, jsonify, render_template, request
-from flask_jwt_extended import (JWTManager, create_access_token,
-                                create_refresh_token, get_jwt_identity,
-                                jwt_required)
+from flask_jwt_extended import JWTManager
 from marshmallow import Schema, fields
-from sqlalchemy import create_engine, text
+
+from blueprints.account import Account, Profile, Subscription
+from blueprints.genre import Genre
+from blueprints.login import Login
+from blueprints.movies import Movies
+from blueprints.profile import (AccessFilms, AccessSeries, History, Interests,
+                                Preferences, Watchlist)
+from blueprints.report import (Country, FilmNames, FilmViews, SeriesNames,
+                               SeriesViews)
+from blueprints.series import Series
+from blueprints.token import Token
+
+class ErrorResponseSchema(Schema):
+    msg = fields.String(required=True)
 
 if os.environ.get('FLASK_ENV') == 'development':
     load_dotenv("../.env")
@@ -33,39 +41,193 @@ spec = APISpec(
     ),
 )
 
-class LoginSchema(Schema):
-    username = fields.String(required=True)
-    password = fields.String(required=True)
-
-class LoginResponseSchema(Schema):
-    access_token = fields.String(required=True)
-    refresh_token = fields.String(required=True)
-
-class ErrorResponseSchema(Schema):
-    msg = fields.String(required=True)
-
-class WatchlistSchema(Schema):
-    film = fields.List(fields.Integer(), required=True)
-    series = fields.List(fields.Integer(), required=True)
-
 api_key_scheme = {"type": "http", "scheme": "bearer", "bearerFormat": "JWT"}
 spec.components.security_scheme("JWT", api_key_scheme)
-
-key = b64decode(os.environ['SECRET_KEY'])
 
 app = Flask(__name__)
 app.config['JWT_SECRET_KEY'] = os.environ['JWT_SECRET_KEY']
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
-app.config["SESSION_PERMANENT"] = False
-app.config["SESSION_TYPE"] = "filesystem"
 
 jwt = JWTManager(app)
 
-def get_db_engine(data):
-    if os.environ.get('FLASK_ENV') == 'development':
-        return create_engine(f"postgresql+psycopg://{data}@localhost:5432/{os.environ['DB_NAME']}", echo=True)
-    else:
-        return create_engine(f"postgresql+psycopg://{data}@db:5432/{os.environ['DB_NAME']}", echo=True)
+# Account
+account_view_get = Account.as_view('account_get')
+account_view_post = Account.as_view('account_post')
+account_view_crud = Account.as_view('account_crud')
+
+app.add_url_rule('/account/', defaults={'id': None}, view_func=account_view_get, methods=['GET',])
+app.add_url_rule('/account/', view_func=account_view_post, methods=['POST',])
+app.add_url_rule('/account/<int:id>', view_func=account_view_crud, methods=['GET', 'PUT', 'DELETE'])
+
+account_profile_view_get = Profile.as_view('account_profile_get')
+account_profile_view_post = Profile.as_view('account_profile_post')
+account_profile_view_crud = Profile.as_view('account_profile_crud')
+
+app.add_url_rule('/profile/', defaults={'id': None}, view_func=account_profile_view_get, methods=['GET',])
+app.add_url_rule('/profile/', view_func=account_profile_view_post, methods=['POST',])
+app.add_url_rule('/profile/<int:id>', view_func=account_profile_view_crud, methods=['GET', 'PUT', 'DELETE'])
+
+account_subscription_view_get = Subscription.as_view('account_subscription_get')
+account_subscription_view_post = Subscription.as_view('account_subscription_post')
+account_subscription_view_crud = Subscription.as_view('account_subscription_crud')
+
+app.add_url_rule('/subscription/', defaults={'id': None}, view_func=account_subscription_view_get, methods=['GET',])
+app.add_url_rule('/subscription/', view_func=account_subscription_view_post, methods=['POST',])
+app.add_url_rule('/subscription/<int:id>', view_func=account_subscription_view_crud, methods=['GET', 'PUT', 'DELETE'])
+
+# Genre
+genre_view_get = Genre.as_view('genre_get')
+genre_view_post = Genre.as_view('genre_post')
+genre_view_crud = Genre.as_view('genre_crud')
+
+app.add_url_rule('/genre/', defaults={'id': None}, view_func=genre_view_get, methods=['GET',])
+app.add_url_rule('/genre/', view_func=genre_view_post, methods=['POST',])
+app.add_url_rule('/genre/<int:id>', view_func=genre_view_crud, methods=['GET', 'PUT', 'DELETE'])
+
+# Movies
+movies_view_get = Movies.as_view('movies_get')
+movies_view_post = Movies.as_view('movies_post')
+movies_view_crud = Movies.as_view('movies_crud')
+
+app.add_url_rule('/movies/', defaults={'id': None}, view_func=movies_view_get, methods=['GET',])
+app.add_url_rule('/movies/', view_func=movies_view_post, methods=['POST',])
+app.add_url_rule('/movies/<int:id>', view_func=movies_view_crud, methods=['GET', 'PUT', 'DELETE'])
+
+# Series
+series_view_get = Series.as_view('series_get')
+series_view_post = Series.as_view('series_post')
+series_view_crud = Series.as_view('series_crud')
+
+app.add_url_rule('/series/', defaults={'id': None}, view_func=series_view_get, methods=['GET',])
+app.add_url_rule('/series/', view_func=series_view_post, methods=['POST',])
+app.add_url_rule('/series/<int:id>', view_func=series_view_crud, methods=['GET', 'PUT', 'DELETE'])
+
+# Profile
+history_view_get = History.as_view('history_get')
+history_view_post = History.as_view('history_post')
+history_view_crud = History.as_view('history_crud')
+
+app.add_url_rule('/history/', defaults={'id': None}, view_func=history_view_get, methods=['GET',])
+app.add_url_rule('/history/', view_func=history_view_post, methods=['POST',])
+app.add_url_rule('/history/<int:id>', view_func=history_view_crud, methods=['GET', 'PUT', 'DELETE'])
+
+interests_view_get = Interests.as_view('interests_get')
+interests_view_post = Interests.as_view('interests_post')
+interests_view_crud = Interests.as_view('interests_crud')
+
+app.add_url_rule('/interests/', defaults={'id': None}, view_func=interests_view_get, methods=['GET',])
+app.add_url_rule('/interests/', view_func=interests_view_post, methods=['POST',])
+app.add_url_rule('/interests/<int:id>', view_func=interests_view_crud, methods=['GET', 'PUT', 'DELETE'])
+
+preferences_view_get = Preferences.as_view('preferences_get')
+preferences_view_post = Preferences.as_view('preferences_post')
+preferences_view_crud = Preferences.as_view('preferences_crud')
+
+app.add_url_rule('/preferences/', defaults={'id': None}, view_func=preferences_view_get, methods=['GET',])
+app.add_url_rule('/preferences/', view_func=preferences_view_post, methods=['POST',])
+app.add_url_rule('/preferences/<int:id>', view_func=preferences_view_crud, methods=['GET', 'PUT', 'DELETE'])
+
+access_films_view = AccessFilms.as_view('access_films')
+app.add_url_rule('/profile/<int:profile_id>/access_films/<int:film_id>', view_func=access_films_view, methods=['GET',])
+
+access_series_view = AccessSeries.as_view('access_series')
+app.add_url_rule('/profile/<int:profile_id>/access_series/<int:series_id>', view_func=access_series_view, methods=['GET',])
+
+watchlist_view_get = Watchlist.as_view('watchlist_get')
+watchlist_view_post = Watchlist.as_view('watchlist_post')
+watchlist_view_crud = Watchlist.as_view('watchlist_crud')
+
+app.add_url_rule('/watchlist/', defaults={'id': None}, view_func=watchlist_view_get, methods=['GET',])
+app.add_url_rule('/watchlist/', view_func=watchlist_view_post, methods=['POST',])
+app.add_url_rule('/watchlist/<int:id>', view_func=watchlist_view_crud, methods=['GET', 'PUT', 'DELETE'])
+
+# Report
+views_report_films_names = FilmNames.as_view('views_report_films_names')
+app.add_url_rule("/report/views_report_films_names", view_func=views_report_films_names, methods=['GET'])
+
+views_report_films_views = FilmViews.as_view('views_report_films_views')
+app.add_url_rule("/report/views_report_films_views", view_func=views_report_films_views, methods=['GET'])
+
+views_report_series_title = SeriesNames.as_view('views_report_series_title')
+app.add_url_rule("/report/views_report_series_title", view_func=views_report_series_title, methods=['GET'])
+
+views_report_series_views = SeriesViews.as_view('views_report_series_views')
+app.add_url_rule("/report/views_report_series_views", view_func=views_report_series_views, methods=['GET'])
+
+country_view = Country.as_view('country')
+app.add_url_rule("/report/country", view_func=country_view, methods=['GET'])
+
+# Login
+login_view = Login.as_view('login')
+app.add_url_rule("/login", view_func=login_view, methods=['POST'])
+
+# Token
+refresh_view = Token.as_view('refresh')
+app.add_url_rule("/token_refresh", view_func=refresh_view, methods=['POST'])
+
+# Swagger
+with app.test_request_context():
+    # Account
+    spec.path(view=account_view_get)
+    spec.path(view=account_view_post)
+    spec.path(view=account_view_crud)
+
+    spec.path(view=account_profile_view_get)
+    spec.path(view=account_profile_view_post)
+    spec.path(view=account_profile_view_crud)
+
+    spec.path(view=account_subscription_view_get)
+    spec.path(view=account_subscription_view_post)
+    spec.path(view=account_subscription_view_crud)
+
+    # Genre
+    spec.path(view=genre_view_get)
+    spec.path(view=genre_view_post)
+    spec.path(view=genre_view_crud)
+
+    # Movies
+    spec.path(view=movies_view_get)
+    spec.path(view=movies_view_post)
+    spec.path(view=movies_view_crud)
+
+    # Series
+    spec.path(view=series_view_get)
+    spec.path(view=series_view_post)
+    spec.path(view=series_view_crud)
+
+    # Profile
+    spec.path(view=history_view_get)
+    spec.path(view=history_view_post)
+    spec.path(view=history_view_crud)
+
+    spec.path(view=interests_view_get)
+    spec.path(view=interests_view_post)
+    spec.path(view=interests_view_crud)
+
+    spec.path(view=preferences_view_get)
+    spec.path(view=preferences_view_post)
+    spec.path(view=preferences_view_crud)
+
+    spec.path(view=access_films_view)
+
+    spec.path(view=access_series_view)
+
+    spec.path(view=watchlist_view_get)
+    spec.path(view=watchlist_view_post)
+    spec.path(view=watchlist_view_crud)
+
+    # Report
+    spec.path(view=views_report_films_names)
+    spec.path(view=views_report_films_views)
+    spec.path(view=views_report_series_title)
+    spec.path(view=views_report_series_views)
+    spec.path(view=country_view)
+
+    # Login
+    spec.path(view=login_view)
+
+    # Token
+    spec.path(view=refresh_view)
 
 @app.route('/docs')
 def docs():
@@ -80,387 +242,3 @@ def openapi():
     Swagger JSON endpoint
     """
     return jsonify(spec.to_dict())
-
-@app.route('/login', methods=['POST'])
-def login():
-    """
-    Login endpoint
-    ---
-    post:
-        description: Login endpoint
-        requestBody:
-            content:
-                application/json:
-                    schema: LoginSchema
-        responses:
-            200:
-                description: Login successful
-                content:
-                    application/json:
-                        schema: LoginResponseSchema
-            401:
-                description: Bad username or password
-                content:
-                    application/json:
-                        schema: ErrorResponseSchema
-    """
-    try:
-        username = request.json.get('username')
-        password = request.json.get('password')
-
-        data = f"{username}:{password}"
-
-        engine = get_db_engine(data)
-        engine.connect()
-
-        cipher = ChaCha20.new(key=key)
-        ciphertext = cipher.encrypt(data.encode('utf-8'))
-
-        nonce = b64encode(cipher.nonce).decode('utf-8')
-        ciphertext = b64encode(ciphertext).decode('utf-8')
-
-        result = json.dumps({'nonce': nonce, 'ciphertext': ciphertext})
-    except Exception as e:
-        return jsonify({"msg": "Bad username or password"}), 401
-
-    access_token = create_access_token(identity=result)
-    refresh_token = create_refresh_token(identity=result)
-
-    return jsonify(access_token=access_token, refresh_token=refresh_token)
-
-@app.route('/token/refresh', methods=['POST'])
-@jwt_required(refresh=True)
-def refresh():
-    """
-    Token refresh endpoint
-    ---
-    post:
-        description: Token refresh endpoint
-        security:
-            - JWT: []
-        responses:
-            200:
-                description: Token refresh successful
-                content:
-                    application/json:
-                        schema: LoginResponseSchema
-    """
-    current_user = get_jwt_identity()
-    new_token = create_access_token(identity=current_user)
-
-    return jsonify(access_token=new_token)
-
-@app.route('/watchlist/<int:watchlist_id>', methods=['GET'])
-@jwt_required(optional=False)
-def watchlist(watchlist_id):
-    """
-    Returns the watchlist
-    ---
-    get:
-        description: Returns the watchlist
-        security:
-            - JWT: []
-        parameters:
-            - in: path
-              name: watchlist_id
-              schema:
-                type: integer
-              required: true
-              description: The watchlist ID
-        responses:
-            200:
-                description: Watchlist returned
-                content:
-                    application/json:
-                        schema: WatchlistSchema
-    """
-    data = json.loads(get_jwt_identity())
-
-    nonce = b64decode(data["nonce"])
-    ciphertext = b64decode(data["ciphertext"])
-
-    cipher = ChaCha20.new(key=key, nonce=nonce)
-    plaintext = cipher.decrypt(ciphertext).decode('utf-8')
-    engine = get_db_engine(plaintext)
-    with engine.connect() as connection:
-        result = [[], []]
-
-        resultFilms = connection.execute(text(f"SELECT getWatchlistFilmsForID(:watchlist_id);"),
-                                         {"watchlist_id": watchlist_id})
-
-        if resultFilms.rowcount != 0:
-            for film in resultFilms:
-                result[0].append(film._asdict())
-
-        resultSeries = connection.execute(text(f"SELECT getWatchlistSeriesForID(:watchlist_id);"),
-                                          {"watchlist_id": watchlist_id})
-
-        if resultSeries.rowcount != 0:
-            for series in resultSeries:
-                result[1].append(series._asdict())
-
-        return jsonify(result)
-
-@app.route('/history/<int:history_id>', endpoint="history", methods=['GET'])
-@jwt_required(optional=False)
-def history(history_id):
-    """
-    Returns full history in the same format as the watchlist function
-    ---
-    get:
-        description: Returns full history in the same format as the watchlist function
-        security:
-            - JWT: []
-        parameters:
-            - in: path
-              name: history_id
-              schema:
-                type: integer
-              required: true
-              description: The history ID
-        responses:
-            200:
-                description: History returned
-                content:
-                    application/json:
-                        schema: WatchlistSchema
-    """
-    data = json.loads(get_jwt_identity())
-
-    nonce = b64decode(data["nonce"])
-    ciphertext = b64decode(data["ciphertext"])
-
-    cipher = ChaCha20.new(key=key, nonce=nonce)
-    plaintext = cipher.decrypt(ciphertext).decode('utf-8')
-    engine = get_db_engine(plaintext)
-    with engine.connect() as connection:
-        result = [[], []]
-
-        resultFilms = connection.execute(text(f"SELECT getHistoryMoviesForID(:history_id);"),
-                                         {"history_id": history_id})
-
-        if resultFilms.rowcount != 0:
-            for film in resultFilms:
-                result[0].append(film._asdict())
-
-        resultSeries = connection.execute(text(f"SELECT getHistorySeriesForID(:history_id);"),
-                                            {"history_id": history_id})
-
-        if resultSeries.rowcount != 0:
-            for series in resultSeries:
-                result[1].append(series._asdict())
-
-        return jsonify(result)
-
-@app.route('/access_films/<int:profile_id>/<int:film_id>', endpoint="access_films", methods=['GET'])
-@jwt_required(optional=False)
-def access_films(profile_id, film_id):
-    """
-    These 2 functions grant or deny access to the film or series,
-    depending on the profile age and films restriction
-    ---
-    get:
-        description: These 2 functions grant or deny access to the film or series, depending on the profile age and films restriction
-        security:
-            - JWT: []
-        parameters:
-            - in: path
-              name: profile_id
-              schema:
-                type: integer
-              required: true
-              description: The user ID
-            - in: path
-              name: film_id
-              schema:
-                type: integer
-              required: true
-              description: The film ID
-        responses:
-            200:
-                description: Access granted
-                content:
-                    application/json:
-                        schema: WatchlistSchema
-            401:
-                description: Access denied
-                content:
-                    application/json:
-                        schema: ErrorResponseSchema
-    """
-    data = json.loads(get_jwt_identity())
-
-    nonce = b64decode(data["nonce"])
-    ciphertext = b64decode(data["ciphertext"])
-
-    cipher = ChaCha20.new(key=key, nonce=nonce)
-    plaintext = cipher.decrypt(ciphertext).decode('utf-8')
-    engine = get_db_engine(plaintext)
-    with engine.connect() as connection:
-        curent_age = connection.execute(text(f"SELECT getAgeProfile(:profile_id);"),
-                                        {"profile_id": profile_id}).first()[0]
-
-        film_age = connection.execute(text(f"SELECT getAgeRestrictorFilms(:film_id)"),
-                                      {"film_id": film_id}).first()[0]
-
-        return jsonify(film_age <= curent_age)
-
-@app.route('/access_series/<int:profile_id>/<int:series_id>', endpoint="access_series", methods=['GET'])
-@jwt_required(optional=False)
-def access_series(profile_id, series_id):
-    """
-    These 2 functions grant or deny access to the film or series,
-    depending on the profile age and films restriction
-    ---
-    get:
-        description: These 2 functions grant or deny access to the film or series, depending on the profile age and films restriction
-        security:
-            - JWT: []
-        parameters:
-            - in: path
-              name: profile_id
-              schema:
-                type: integer
-              required: true
-              description: The user ID
-            - in: path
-              name: series_id
-              schema:
-                type: integer
-              required: true
-              description: The series ID
-        responses:
-            200:
-                description: Access granted
-                content:
-                    application/json:
-                        schema: WatchlistSchema
-            401:
-                description: Access denied
-                content:
-                    application/json:
-                        schema: ErrorResponseSchema
-    """
-    data = json.loads(get_jwt_identity())
-
-    nonce = b64decode(data["nonce"])
-    ciphertext = b64decode(data["ciphertext"])
-
-    cipher = ChaCha20.new(key=key, nonce=nonce)
-    plaintext = cipher.decrypt(ciphertext).decode('utf-8')
-    engine = get_db_engine(plaintext)
-    with engine.connect() as connection:
-        curent_age = connection.execute(text(f"SELECT getAgeProfile(:profile_id)"),
-                                        {"profile_id": profile_id}).first()[0]
-
-        series_age = connection.execute(text(f"SELECT getAgeRestrictorSeries(:series_id);"),
-                                        {"series_id": series_id}).first()[0]
-
-        return jsonify(series_age <= curent_age)
-
-@app.route('/views_report_films', endpoint='views_report_films', methods=['GET'])
-@jwt_required(optional=False)
-def views_report_films():
-    """
-    These 2 functions fetch a total view count with the name
-    ---
-    get:
-        description: These 2 functions fetch a total view count with the name
-        security:
-            - JWT: []
-        responses:
-            200:
-                description: Total view count returned
-                content:
-                    application/json:
-                        schema: WatchlistSchema
-    """
-    data = json.loads(get_jwt_identity())
-
-    nonce = b64decode(data["nonce"])
-    ciphertext = b64decode(data["ciphertext"])
-
-    cipher = ChaCha20.new(key=key, nonce=nonce)
-    plaintext = cipher.decrypt(ciphertext).decode('utf-8')
-    engine = get_db_engine(plaintext)
-    with engine.connect() as connection:
-        result = connection.execute(text(f"SELECT getMovieViews()")).all()
-
-    totalViewCount = [dict(row) for row in result]
-
-    return jsonify(totalViewCount)
-
-@app.route('/views_report_series', endpoint='views_report_series', methods=['GET'])
-@jwt_required(optional=False)
-def views_report_series():
-    """
-    These 2 functions fetch a total view count with the name
-    ---
-    get:
-        description: These 2 functions fetch a total view count with the name
-        security:
-            - JWT: []
-        responses:
-            200:
-                description: Total view count returned
-                content:
-                    application/json:
-                        schema: WatchlistSchema
-    """
-    data = json.loads(get_jwt_identity())
-
-    nonce = b64decode(data["nonce"])
-    ciphertext = b64decode(data["ciphertext"])
-
-    cipher = ChaCha20.new(key=key, nonce=nonce)
-    plaintext = cipher.decrypt(ciphertext).decode('utf-8')
-    engine = get_db_engine(plaintext)
-    with engine.connect() as connection:
-        result = connection.execute(text(f"SELECT getSeriesViews()")).all()
-
-    totalViewCount = [dict(row) for row in result]
-
-    return jsonify(totalViewCount)
-
-@app.route('/country_report', endpoint='country_report', methods=['GET'])
-@jwt_required(optional=False)
-def country_report():
-    """
-    This is the function which returns the total count of the countries
-    ---
-    get:
-        description: This is the function which returns the total count of the countries
-        security:
-            - JWT: []
-        responses:
-            200:
-                description: Total count of the countries returned
-                content:
-                    application/json:
-                        schema: WatchlistSchema
-    """
-    data = json.loads(get_jwt_identity())
-
-    nonce = b64decode(data["nonce"])
-    ciphertext = b64decode(data["ciphertext"])
-
-    cipher = ChaCha20.new(key=key, nonce=nonce)
-    plaintext = cipher.decrypt(ciphertext).decode('utf-8')
-    engine = get_db_engine(plaintext)
-    with engine.connect() as connection:
-        result = connection.execute(text(f"SELECT getProfileCountry()")).all()
-
-    countryCount = [dict(row) for row in result]
-
-    return jsonify(countryCount)
-
-with app.test_request_context():
-    spec.path(view=login)
-    spec.path(view=refresh)
-    spec.path(view=watchlist)
-    spec.path(view=history)
-    spec.path(view=access_films)
-    spec.path(view=access_series)
-    spec.path(view=views_report_films)
-    spec.path(view=views_report_series)
-    spec.path(view=country_report)
