@@ -15,7 +15,7 @@ class ReportViewsSchema(Schema):
     views = fields.Integer(required=True)
 
 class ReportCountrySchema(Schema):
-    number = fields.String(required=True)
+    country = fields.Integer(required=True)
 
 class FilmNames(MethodView):
     @jwt_required(optional=False)
@@ -271,13 +271,14 @@ class Country(MethodView):
         try:
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                result = connection.execute(text("SELECT getNOfUsersPerCountry()")).all()
+                users = connection.execute(text("SELECT getNOfUsersPerCountry()")).all()
+                countries = connection.execute(text("SELECT getUsersCountry()")).all()
         except Exception:
             return generate_response({"error": "Bad request"}, request, 400)
 
-        totalNumberOfUsers = []
+        users = [user[0] for user in users]
+        countries = [country[0] for country in countries]
 
-        for number in result:
-            totalNumberOfUsers.append({"number" : number[0]})
+        result = dict(zip(countries, users))
 
-        return generate_response(totalNumberOfUsers, request)
+        return generate_response(result, request)
