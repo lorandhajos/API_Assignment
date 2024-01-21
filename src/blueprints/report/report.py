@@ -25,7 +25,7 @@ class FilmNames(MethodView):
         ---
         tags:
             - report
-        description: These 2 functions fetch a total view count with the name
+        description: This function returns a total view count with the name
         security:
             - JWT: []
         responses:
@@ -36,12 +36,32 @@ class FilmNames(MethodView):
                         schema: ReportNamesSchema
                     application/xml:
                         schema: ReportNamesSchema
+            400:
+                description: Bad request
+                content:
+                    application/json:
+                        schema: ErrorResponseSchema
+                    application/xml:
+                        schema: ErrorResponseSchema
+            401:
+                description: Bad username or password
+                content:
+                    application/json:
+                        schema: ErrorResponseSchema
+                    application/xml:
+                        schema: ErrorResponseSchema
         """
-        data = decrypt(json.loads(get_jwt_identity()))
+        try:
+            data = decrypt(json.loads(get_jwt_identity()))
+        except Exception:
+            return generate_response({"error": "Bad username or password"}, request, 401)
 
-        engine = get_db_engine(data)
-        with engine.connect() as connection:
-            result = connection.execute(text(f"SELECT getMovieNames();")).all()
+        try:
+            engine = get_db_engine(data)
+            with engine.connect() as connection:
+                result = connection.execute(text("SELECT getMovieNames();")).all()
+        except Exception:
+            return generate_response({"error": "Bad request"}, request, 400)
 
         totalNames = []
 
@@ -58,7 +78,7 @@ class FilmViews(MethodView):
         ---
         tags:
             - report
-        description: These 2 functions fetch a total view count with the name
+        description: Thesis function returns a total view count with the name
         security:
             - JWT: []
         responses:
@@ -69,12 +89,32 @@ class FilmViews(MethodView):
                         schema: ReportViewsSchema
                     application/xml:
                         schema: ReportViewsSchema
+            400:
+                description: Bad request
+                content:
+                    application/json:
+                        schema: ErrorResponseSchema
+                    application/xml:
+                        schema: ErrorResponseSchema
+            401:
+                description: Bad username or password
+                content:
+                    application/json:
+                        schema: ErrorResponseSchema
+                    application/xml:
+                        schema: ErrorResponseSchema
         """
-        data = decrypt(json.loads(get_jwt_identity()))
+        try:
+            data = decrypt(json.loads(get_jwt_identity()))
+        except Exception:
+            return generate_response({"error": "Bad username or password"}, request, 401)
 
-        engine = get_db_engine(data)
-        with engine.connect() as connection:
-            result = connection.execute(text(f"SELECT getMovieViews();")).all()
+        try:
+            engine = get_db_engine(data)
+            with engine.connect() as connection:
+                result = connection.execute(text("SELECT getMovieViews();")).all()
+        except Exception:
+            return generate_response({"error": "Bad request"}, request, 400)
 
         totalViews = []
 
@@ -102,12 +142,32 @@ class SeriesNames(MethodView):
                         schema: ReportNamesSchema
                     application/xml:
                         schema: ReportNamesSchema
+            400:
+                description: Bad request
+                content:
+                    application/json:
+                        schema: ErrorResponseSchema
+                    application/xml:
+                        schema: ErrorResponseSchema
+            401:
+                description: Bad username or password
+                content:
+                    application/json:
+                        schema: ErrorResponseSchema
+                    application/xml:
+                        schema: ErrorResponseSchema
         """
-        data = decrypt(json.loads(get_jwt_identity()))
+        try:
+            data = decrypt(json.loads(get_jwt_identity()))
+        except Exception:
+            return generate_response({"error": "Bad username or password"}, request, 401)
 
-        engine = get_db_engine(data)
-        with engine.connect() as connection:
-            result = connection.execute(text(f"SELECT getSeriesTitle();")).all()
+        try:
+            engine = get_db_engine(data)
+            with engine.connect() as connection:
+                result = connection.execute(text("SELECT getSeriesTitle();")).all()
+        except Exception:
+            return generate_response({"error": "Bad request"}, request, 400)
 
         totalNames = []
 
@@ -135,12 +195,32 @@ class SeriesViews(MethodView):
                         schema: ReportViewsSchema
                     application/xml:
                         schema: ReportViewsSchema
+            400:
+                description: Bad request
+                content:
+                    application/json:
+                        schema: ErrorResponseSchema
+                    application/xml:
+                        schema: ErrorResponseSchema
+            401:
+                description: Bad username or password
+                content:
+                    application/json:
+                        schema: ErrorResponseSchema
+                    application/xml:
+                        schema: ErrorResponseSchema
         """
-        data = decrypt(json.loads(get_jwt_identity()))
+        try:
+            data = decrypt(json.loads(get_jwt_identity()))
+        except Exception:
+            return generate_response({"error": "Bad username or password"}, request, 401)
 
-        engine = get_db_engine(data)
-        with engine.connect() as connection:
-            result = connection.execute(text(f"SELECT getSeriesViews();")).all()
+        try:
+            engine = get_db_engine(data)
+            with engine.connect() as connection:
+                result = connection.execute(text("SELECT getSeriesViews();")).all()
+        except Exception:
+            return generate_response({"error": "Bad request"}, request, 400)
 
         totalViews = []
 
@@ -165,13 +245,35 @@ class Country(MethodView):
                 description: Total count of the countries returned
                 content:
                     application/json:
-                        schema: CountrySchema
+                        schema: ReportCountrySchema
                     application/xml:
-                        schema: CountrySchema
+                        schema: ReportCountrySchema
+            400:
+                description: Bad request
+                content:
+                    application/json:
+                        schema: ErrorResponseSchema
+                    application/xml:
+                        schema: ErrorResponseSchema
+            401:
+                description: Bad username or password
+                content:
+                    application/json:
+                        schema: ErrorResponseSchema
+                    application/xml:
+                        schema: ErrorResponseSchema
         """
-        engine = get_db_engine()
-        with engine.connect() as connection:
-            result = connection.execute(text(f"SELECT getNOfUsersPerCountry()")).all()
+        try:
+            data = decrypt(json.loads(get_jwt_identity()))
+        except Exception:
+            return generate_response({"error": "Bad username or password"}, request, 401)
+
+        try:
+            engine = get_db_engine(data)
+            with engine.connect() as connection:
+                result = connection.execute(text("SELECT getNOfUsersPerCountry()")).all()
+        except Exception:
+            return generate_response({"error": "Bad request"}, request, 400)
 
         totalNumberOfUsers = []
 
