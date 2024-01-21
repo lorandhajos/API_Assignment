@@ -19,6 +19,7 @@ from blueprints.report import (Country, FilmNames, FilmViews, SeriesNames,
                                SeriesViews)
 from blueprints.series import Series
 from blueprints.token import Token
+from blueprints.random import Random
 
 class ErrorResponseSchema(Schema):
     msg = fields.String(required=True)
@@ -165,6 +166,10 @@ app.add_url_rule("/login", view_func=login_view, methods=['POST'])
 refresh_view = Token.as_view('refresh')
 app.add_url_rule("/token_refresh", view_func=refresh_view, methods=['POST'])
 
+# Random
+random_view = Random.as_view('random')
+app.add_url_rule("/random", view_func=random_view, methods=['GET'])
+
 # Swagger
 with app.test_request_context():
     # Account
@@ -228,6 +233,9 @@ with app.test_request_context():
 
     # Token
     spec.path(view=refresh_view)
+
+    # Random
+    spec.path(view=random_view)
 
 @app.route('/docs')
 def docs():
