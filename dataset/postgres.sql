@@ -15,7 +15,8 @@ CREATE TABLE "public"."account" (
     "login_attempts" integer DEFAULT '0',
     "last_login" date,
     "subscription_id" integer,
-    CONSTRAINT "account_pkey" PRIMARY KEY ("account_id")
+    CONSTRAINT "account_pkey" PRIMARY KEY ("account_id"),
+    CONSTRAINT "account_unique" UNIQUE ("account_id", "email")
 ) WITH (oids = false);
 
 INSERT INTO "account" ("account_id", "email", "password", "payment_method", "blocked", "login_attempts", "last_login", "subscription_id") VALUES
@@ -33,7 +34,8 @@ CREATE TABLE "public"."episode" (
     "duration" interval DEFAULT '00:00:00' NOT NULL,
     "season_number" integer NOT NULL,
     "series_id" integer NOT NULL,
-    CONSTRAINT "episode_pkey" PRIMARY KEY ("episode_id")
+    CONSTRAINT "episode_pkey" PRIMARY KEY ("episode_id"),
+    CONSTRAINT "episode_unique" UNIQUE ("episode_id")
 ) WITH (oids = false);
 
 INSERT INTO "episode" ("episode_id", "title", "duration", "season_number", "series_id") VALUES
@@ -52,7 +54,8 @@ CREATE TABLE "public"."genre" (
     "genre_id" integer DEFAULT nextval('genre_genre_id_seq') NOT NULL,
     "name" character varying(255) NOT NULL,
     "age_restriction" integer NOT NULL,
-    CONSTRAINT "genre_pkey" PRIMARY KEY ("genre_id")
+    CONSTRAINT "genre_pkey" PRIMARY KEY ("genre_id"),
+    CONSTRAINT "genre_unique" UNIQUE ("genre_id")
 ) WITH (oids = false);
 
 INSERT INTO "genre" ("genre_id", "name", "age_restriction") VALUES
@@ -69,7 +72,8 @@ CREATE SEQUENCE history_history_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 214748364
 
 CREATE TABLE "public"."history" (
     "history_id" integer DEFAULT nextval('history_history_id_seq') NOT NULL,
-    CONSTRAINT "history_pkey" PRIMARY KEY ("history_id")
+    CONSTRAINT "history_pkey" PRIMARY KEY ("history_id"),
+    CONSTRAINT "history_unique" UNIQUE ("history_id")
 ) WITH (oids = false);
 
 INSERT INTO "history" ("history_id") VALUES
@@ -85,7 +89,8 @@ CREATE TABLE "public"."history_movies" (
     "history_movies_id" integer DEFAULT nextval('history_movies_history_movies_id_seq') NOT NULL,
     "history_id" integer NOT NULL,
     "movie_id" integer NOT NULL,
-    CONSTRAINT "history_movies_pkey" PRIMARY KEY ("history_movies_id")
+    CONSTRAINT "history_movies_pkey" PRIMARY KEY ("history_movies_id"),
+    CONSTRAINT "history_movies_unique" UNIQUE ("history_movies_id")
 ) WITH (oids = false);
 
 INSERT INTO "history_movies" ("history_movies_id", "history_id", "movie_id") VALUES
@@ -101,7 +106,8 @@ CREATE TABLE "public"."history_series" (
     "history_series_id" integer DEFAULT nextval('history_series_history_series_id_seq') NOT NULL,
     "history_id" integer NOT NULL,
     "series_id" integer NOT NULL,
-    CONSTRAINT "history_series_pkey" PRIMARY KEY ("history_series_id")
+    CONSTRAINT "history_series_pkey" PRIMARY KEY ("history_series_id"),
+    CONSTRAINT "history_series_unique" UNIQUE ("history_series_id")
 ) WITH (oids = false);
 
 INSERT INTO "history_series" ("history_series_id", "history_id", "series_id") VALUES
@@ -133,7 +139,8 @@ CREATE TABLE "public"."movie" (
     "title" character varying(255) NOT NULL,
     "duration" interval DEFAULT '00:00:00' NOT NULL,
     "views" integer NOT NULL,
-    CONSTRAINT "movie_pkey" PRIMARY KEY ("movie_id")
+    CONSTRAINT "movie_pkey" PRIMARY KEY ("movie_id"),
+    CONSTRAINT "movie_unique" UNIQUE ("movie_id")
 ) WITH (oids = false);
 
 INSERT INTO "movie" ("movie_id", "title", "duration", "views") VALUES
@@ -166,60 +173,14 @@ CREATE TABLE "public"."profile" (
     "watchlist_id" integer NOT NULL,
     "history_id" integer NOT NULL,
     "country" character varying(255) NOT NULL,
-    CONSTRAINT "profile_pkey" PRIMARY KEY ("profile_id")
+    CONSTRAINT "profile_pkey" PRIMARY KEY ("profile_id"),
+    CONSTRAINT "profile_unique" UNIQUE ("profile_id")
 ) WITH (oids = false);
 
 INSERT INTO "profile" ("profile_id", "account_id", "profile_image", "profile_child", "age", "language", "watchlist_id", "history_id", "country") VALUES
 (1,	1,	'placeholder.jpeg',	't',	12,	'English',	1,	1,	'Brazil'),
 (2,	2,	'placeholder.jpeg',	'f',	20,	'English',	2,	2,	'Netherlands'),
 (3,	3,	'placeholder.jpeg',	'f',	18,	'English',	3,	3,	'Brazil');
-
-DROP VIEW IF EXISTS "selectaccount";
-CREATE TABLE "selectaccount" ("account_id" integer, "email" character varying(255), "password" character varying(255), "payment_method" character varying(255), "blocked" boolean, "login_attempts" integer, "last_login" date, "subscription_id" integer);
-
-
-DROP VIEW IF EXISTS "selecthistorymovies";
-CREATE TABLE "selecthistorymovies" ("history_movies_id" integer, "history_id" integer, "movie_id" integer);
-
-
-DROP VIEW IF EXISTS "selecthistoryseries";
-CREATE TABLE "selecthistoryseries" ("history_series_id" integer, "history_id" integer, "series_id" integer);
-
-
-DROP VIEW IF EXISTS "selectinterests";
-CREATE TABLE "selectinterests" ("profile_id" integer, "genre_id" integer);
-
-
-DROP VIEW IF EXISTS "selectmovie";
-CREATE TABLE "selectmovie" ("movie_id" integer, "title" character varying(255), "duration" interval, "views" integer);
-
-
-DROP VIEW IF EXISTS "selectmoviesgenre";
-CREATE TABLE "selectmoviesgenre" ("movie_id" integer, "genre_id" integer);
-
-
-DROP VIEW IF EXISTS "selectprofile";
-CREATE TABLE "selectprofile" ("profile_id" integer, "account_id" integer, "profile_image" character varying(255), "profile_child" boolean, "age" integer, "language" character varying(255), "watchlist_id" integer, "history_id" integer, "country" character varying(255));
-
-
-DROP VIEW IF EXISTS "selectseries";
-CREATE TABLE "selectseries" ("series_id" integer, "title" character varying(255), "views" integer);
-
-
-DROP VIEW IF EXISTS "selectseriesgenre";
-CREATE TABLE "selectseriesgenre" ("series_id" integer, "genre_id" integer);
-
-
-DROP VIEW IF EXISTS "selectsubscription";
-CREATE TABLE "selectsubscription" ("subscription_id" integer, "description" character varying(255), "subscription_price" real);
-
-
-DROP VIEW IF EXISTS "selectwatchlistmovies";
-CREATE TABLE "selectwatchlistmovies" ("watchlist_movies_id" integer, "watchlist_id" integer, "movie_id" integer);
-
-
-DROP VIEW IF EXISTS "selectwatchlistseries";
-CREATE TABLE "selectwatchlistseries" ("watchlist_series_id" integer, "watchlist_id" integer, "series_id" integer);
 
 
 DROP TABLE IF EXISTS "series";
@@ -230,7 +191,8 @@ CREATE TABLE "public"."series" (
     "series_id" integer DEFAULT nextval('series_series_id_seq') NOT NULL,
     "title" character varying(255) NOT NULL,
     "views" integer NOT NULL,
-    CONSTRAINT "series_pkey" PRIMARY KEY ("series_id")
+    CONSTRAINT "series_pkey" PRIMARY KEY ("series_id"),
+    CONSTRAINT "series_unique" UNIQUE ("series_id")
 ) WITH (oids = false);
 
 INSERT INTO "series" ("series_id", "title", "views") VALUES
@@ -257,7 +219,8 @@ CREATE TABLE "public"."subscription" (
     "subscription_id" integer DEFAULT nextval('subscription_subscription_id_seq') NOT NULL,
     "description" character varying(255) NOT NULL,
     "subscription_price" real DEFAULT '7.99' NOT NULL,
-    CONSTRAINT "subscription_pkey" PRIMARY KEY ("subscription_id")
+    CONSTRAINT "subscription_pkey" PRIMARY KEY ("subscription_id"),
+    CONSTRAINT "subscription_unique" UNIQUE ("subscription_id")
 ) WITH (oids = false);
 
 INSERT INTO "subscription" ("subscription_id", "description", "subscription_price") VALUES
@@ -271,7 +234,8 @@ CREATE SEQUENCE watchlist_watchlist_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 21474
 
 CREATE TABLE "public"."watchlist" (
     "watchlist_id" integer DEFAULT nextval('watchlist_watchlist_id_seq') NOT NULL,
-    CONSTRAINT "watchlist_pkey" PRIMARY KEY ("watchlist_id")
+    CONSTRAINT "watchlist_pkey" PRIMARY KEY ("watchlist_id"),
+    CONSTRAINT "watchlist_unique" UNIQUE ("watchlist_id")
 ) WITH (oids = false);
 
 INSERT INTO "watchlist" ("watchlist_id") VALUES
@@ -288,7 +252,8 @@ CREATE TABLE "public"."watchlist_movies" (
     "watchlist_movies_id" integer DEFAULT nextval('watchlist_movies_watchlist_movies_id_seq') NOT NULL,
     "watchlist_id" integer NOT NULL,
     "movie_id" integer NOT NULL,
-    CONSTRAINT "watchlist_movies_pkey" PRIMARY KEY ("watchlist_movies_id")
+    CONSTRAINT "watchlist_movies_pkey" PRIMARY KEY ("watchlist_movies_id"),
+    CONSTRAINT "watchlist_movies_unique" UNIQUE ("watchlist_movies_id")
 ) WITH (oids = false);
 
 INSERT INTO "watchlist_movies" ("watchlist_movies_id", "watchlist_id", "movie_id") VALUES
@@ -304,7 +269,8 @@ CREATE TABLE "public"."watchlist_series" (
     "watchlist_series_id" integer DEFAULT nextval('watchlist_series_watchlist_series_id_seq') NOT NULL,
     "watchlist_id" integer NOT NULL,
     "series_id" integer NOT NULL,
-    CONSTRAINT "watchlist_series_pkey" PRIMARY KEY ("watchlist_series_id")
+    CONSTRAINT "watchlist_series_pkey" PRIMARY KEY ("watchlist_series_id"),
+    CONSTRAINT "watchlist_series_unique" UNIQUE ("watchlist_series_id")
 ) WITH (oids = false);
 
 INSERT INTO "watchlist_series" ("watchlist_series_id", "watchlist_id", "series_id") VALUES
@@ -338,86 +304,3 @@ ALTER TABLE ONLY "public"."watchlist_movies" ADD CONSTRAINT "fk_watchlist" FOREI
 
 ALTER TABLE ONLY "public"."watchlist_series" ADD CONSTRAINT "fk_series" FOREIGN KEY (series_id) REFERENCES series(series_id) NOT DEFERRABLE;
 ALTER TABLE ONLY "public"."watchlist_series" ADD CONSTRAINT "fk_watchlist" FOREIGN KEY (watchlist_id) REFERENCES watchlist(watchlist_id) NOT DEFERRABLE;
-
-DROP TABLE IF EXISTS "selectaccount";
-CREATE VIEW "selectaccount" AS SELECT account_id,
-    email,
-    password,
-    payment_method,
-    blocked,
-    login_attempts,
-    last_login,
-    subscription_id
-   FROM account;
-
-DROP TABLE IF EXISTS "selecthistorymovies";
-CREATE VIEW "selecthistorymovies" AS SELECT history_movies_id,
-    history_id,
-    movie_id
-   FROM history_movies;
-
-DROP TABLE IF EXISTS "selecthistoryseries";
-CREATE VIEW "selecthistoryseries" AS SELECT history_series_id,
-    history_id,
-    series_id
-   FROM history_series;
-
-DROP TABLE IF EXISTS "selectinterests";
-CREATE VIEW "selectinterests" AS SELECT profile_id,
-    genre_id
-   FROM interests;
-
-DROP TABLE IF EXISTS "selectmovie";
-CREATE VIEW "selectmovie" AS SELECT movie_id,
-    title,
-    duration,
-    views
-   FROM movie;
-
-DROP TABLE IF EXISTS "selectmoviesgenre";
-CREATE VIEW "selectmoviesgenre" AS SELECT movie_id,
-    genre_id
-   FROM movie_genre;
-
-DROP TABLE IF EXISTS "selectprofile";
-CREATE VIEW "selectprofile" AS SELECT profile_id,
-    account_id,
-    profile_image,
-    profile_child,
-    age,
-    language,
-    watchlist_id,
-    history_id,
-    country
-   FROM profile;
-
-DROP TABLE IF EXISTS "selectseries";
-CREATE VIEW "selectseries" AS SELECT series_id,
-    title,
-    views
-   FROM series;
-
-DROP TABLE IF EXISTS "selectseriesgenre";
-CREATE VIEW "selectseriesgenre" AS SELECT series_id,
-    genre_id
-   FROM series_genre;
-
-DROP TABLE IF EXISTS "selectsubscription";
-CREATE VIEW "selectsubscription" AS SELECT subscription_id,
-    description,
-    subscription_price
-   FROM subscription;
-
-DROP TABLE IF EXISTS "selectwatchlistmovies";
-CREATE VIEW "selectwatchlistmovies" AS SELECT watchlist_movies_id,
-    watchlist_id,
-    movie_id
-   FROM watchlist_movies;
-
-DROP TABLE IF EXISTS "selectwatchlistseries";
-CREATE VIEW "selectwatchlistseries" AS SELECT watchlist_series_id,
-    watchlist_id,
-    series_id
-   FROM watchlist_series;
-
--- 2024-01-21 21:38:26.532531+00
