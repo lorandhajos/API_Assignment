@@ -1,4 +1,4 @@
--- Adminer 4.8.1 PostgreSQL 16.1 (Debian 16.1-1.pgdg120+1) dump
+- Adminer 4.8.1 PostgreSQL 16.1 (Debian 16.1-1.pgdg120+1) dump
 
 \connect "postgres";
 
@@ -65,21 +65,6 @@ INSERT INTO "genre" ("genre_id", "name", "age_restriction") VALUES
 (4,	'Adventure',	8),
 (5,	'Soap opera',	16),
 (6,	'Documentary',	12);
-
-DROP TABLE IF EXISTS "history";
-DROP SEQUENCE IF EXISTS history_history_id_seq;
-CREATE SEQUENCE history_history_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1;
-
-CREATE TABLE "public"."history" (
-    "history_id" integer DEFAULT nextval('history_history_id_seq') NOT NULL,
-    CONSTRAINT "history_pkey" PRIMARY KEY ("history_id"),
-    CONSTRAINT "history_unique" UNIQUE ("history_id")
-) WITH (oids = false);
-
-INSERT INTO "history" ("history_id") VALUES
-(1),
-(2),
-(3);
 
 DROP TABLE IF EXISTS "history_movies";
 DROP SEQUENCE IF EXISTS history_movies_history_movies_id_seq;
@@ -265,10 +250,10 @@ ALTER TABLE ONLY "public"."account" ADD CONSTRAINT "fk_subscription" FOREIGN KEY
 
 ALTER TABLE ONLY "public"."episode" ADD CONSTRAINT "fk_series" FOREIGN KEY (series_id) REFERENCES series(series_id) NOT DEFERRABLE;
 
-ALTER TABLE ONLY "public"."history_movies" ADD CONSTRAINT "history_movies_history_id_fkey" FOREIGN KEY (history_id) REFERENCES history(history_id) ON UPDATE CASCADE NOT DEFERRABLE;
+ALTER TABLE ONLY "public"."history_movies" ADD CONSTRAINT "history_movies_history_id_fkey" FOREIGN KEY (history_id) REFERENCES profile(history_id) ON UPDATE CASCADE NOT DEFERRABLE;
 ALTER TABLE ONLY "public"."history_movies" ADD CONSTRAINT "history_movies_movie_id_fkey" FOREIGN KEY (movie_id) REFERENCES movie(movie_id) ON UPDATE CASCADE NOT DEFERRABLE;
 
-ALTER TABLE ONLY "public"."history_series" ADD CONSTRAINT "fk_history" FOREIGN KEY (history_id) REFERENCES history(history_id) NOT DEFERRABLE;
+ALTER TABLE ONLY "public"."history_series" ADD CONSTRAINT "fk_history" FOREIGN KEY (history_id) REFERENCES profile(history_id) NOT DEFERRABLE;
 ALTER TABLE ONLY "public"."history_series" ADD CONSTRAINT "fk_series" FOREIGN KEY (series_id) REFERENCES series(series_id) NOT DEFERRABLE;
 
 ALTER TABLE ONLY "public"."interests" ADD CONSTRAINT "fk_genre" FOREIGN KEY (genre_id) REFERENCES genre(genre_id) NOT DEFERRABLE;
