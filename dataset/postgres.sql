@@ -228,22 +228,6 @@ INSERT INTO "subscription" ("subscription_id", "description", "subscription_pric
 (2,	'Subscription for up to 5 people',	11.99),
 (3,	'Student subscription',	5.99);
 
-DROP TABLE IF EXISTS "watchlist";
-DROP SEQUENCE IF EXISTS watchlist_watchlist_id_seq;
-CREATE SEQUENCE watchlist_watchlist_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1;
-
-CREATE TABLE "public"."watchlist" (
-    "watchlist_id" integer DEFAULT nextval('watchlist_watchlist_id_seq') NOT NULL,
-    CONSTRAINT "watchlist_pkey" PRIMARY KEY ("watchlist_id"),
-    CONSTRAINT "watchlist_unique" UNIQUE ("watchlist_id")
-) WITH (oids = false);
-
-INSERT INTO "watchlist" ("watchlist_id") VALUES
-(1),
-(2),
-(3),
-(4);
-
 DROP TABLE IF EXISTS "watchlist_movies";
 DROP SEQUENCE IF EXISTS watchlist_movies_watchlist_movies_id_seq;
 CREATE SEQUENCE watchlist_movies_watchlist_movies_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1;
@@ -294,13 +278,13 @@ ALTER TABLE ONLY "public"."movie_genre" ADD CONSTRAINT "fk_genre" FOREIGN KEY (g
 ALTER TABLE ONLY "public"."movie_genre" ADD CONSTRAINT "fk_movie" FOREIGN KEY (movie_id) REFERENCES movie(movie_id) NOT DEFERRABLE;
 
 ALTER TABLE ONLY "public"."profile" ADD CONSTRAINT "fk_account" FOREIGN KEY (account_id) REFERENCES account(account_id) NOT DEFERRABLE;
-ALTER TABLE ONLY "public"."profile" ADD CONSTRAINT "fk_watchlist" FOREIGN KEY (watchlist_id) REFERENCES watchlist(watchlist_id) NOT DEFERRABLE;
+ALTER TABLE ONLY "public"."profile" ADD CONSTRAINT "fk_watchlist" FOREIGN KEY (watchlist_id) REFERENCES profile(watchlist_id) NOT DEFERRABLE;
 
 ALTER TABLE ONLY "public"."series_genre" ADD CONSTRAINT "fk_genre" FOREIGN KEY (genre_id) REFERENCES genre(genre_id) NOT DEFERRABLE;
 ALTER TABLE ONLY "public"."series_genre" ADD CONSTRAINT "fk_movie" FOREIGN KEY (series_id) REFERENCES series(series_id) NOT DEFERRABLE;
 
 ALTER TABLE ONLY "public"."watchlist_movies" ADD CONSTRAINT "fk_movie" FOREIGN KEY (movie_id) REFERENCES movie(movie_id) NOT DEFERRABLE;
-ALTER TABLE ONLY "public"."watchlist_movies" ADD CONSTRAINT "fk_watchlist" FOREIGN KEY (watchlist_id) REFERENCES watchlist(watchlist_id) NOT DEFERRABLE;
+ALTER TABLE ONLY "public"."watchlist_movies" ADD CONSTRAINT "fk_watchlist" FOREIGN KEY (watchlist_id) REFERENCES profile(watchlist_id) NOT DEFERRABLE;
 
 ALTER TABLE ONLY "public"."watchlist_series" ADD CONSTRAINT "fk_series" FOREIGN KEY (series_id) REFERENCES series(series_id) NOT DEFERRABLE;
-ALTER TABLE ONLY "public"."watchlist_series" ADD CONSTRAINT "fk_watchlist" FOREIGN KEY (watchlist_id) REFERENCES watchlist(watchlist_id) NOT DEFERRABLE;
+ALTER TABLE ONLY "public"."watchlist_series" ADD CONSTRAINT "fk_watchlist" FOREIGN KEY (watchlist_id) REFERENCES profile(watchlist_id) NOT DEFERRABLE;
