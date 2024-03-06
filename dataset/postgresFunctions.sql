@@ -230,13 +230,15 @@ $$;
 CREATE OR REPLACE PROCEDURE createHistoryMoviesElement(
   IN p_history_movies_id integer,
   IN p_history_id integer,
-  IN p_movie_id integer
+  IN p_movie_id integer,
+  IN p_status_finished boolean,
+  IN p_status_time interval
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
-  INSERT INTO history_movies (history_movies_id, history_id, movie_id)
-  VALUES (p_history_movies_id, p_history_id, p_movie_id);
+  INSERT INTO history_movies (history_movies_id, history_id, movie_id, status_finished, status_time)
+  VALUES (p_history_movies_id, p_history_id, p_movie_id, p_status_finished, p_status_time);
 END;
 $$;
 
@@ -246,13 +248,15 @@ SELECT * FROM history_movies;
 CREATE OR REPLACE PROCEDURE updateHistoryMoviesElement(
   IN p_history_movies_id integer,
   IN p_history_id integer,
-  IN p_movie_id integer
+  IN p_movie_id integer,
+  IN p_status_finished boolean,
+  IN p_status_time interval
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
   UPDATE history_movies
-  SET history_id = p_history_id, movie_id = p_movie_id
+  SET history_id = p_history_id, movie_id = p_movie_id, status_finished = p_status_finished, status_time = p_status_time
   WHERE history_movies_id = p_history_movies_id;
 END;
 $$;

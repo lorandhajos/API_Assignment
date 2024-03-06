@@ -74,14 +74,16 @@ CREATE TABLE "public"."history_movies" (
     "history_movies_id" integer DEFAULT nextval('history_movies_history_movies_id_seq') NOT NULL,
     "history_id" integer NOT NULL,
     "movie_id" integer NOT NULL,
+    "status_finished" boolean DEFAULT 'TRUE' NOT NULL,
+    "status_time" interval DEFAULT '00:00:00' NOT NULL,
     CONSTRAINT "history_movies_pkey" PRIMARY KEY ("history_movies_id"),
     CONSTRAINT "history_movies_unique" UNIQUE ("history_movies_id")
 ) WITH (oids = false);
 
-INSERT INTO "history_movies" ("history_movies_id", "history_id", "movie_id") VALUES
-(1,	1,	1),
-(2,	2,	2),
-(3,	3,	1);
+INSERT INTO "history_movies" ("history_movies_id", "history_id", "movie_id", "status_finished", "status_time") VALUES
+(1,	1,	1, FALSE, '00:00:40'),
+(2,	2,	2, FALSE, '00:20:00'),
+(3,	3,	1, TRUE, '00:59:59');
 
 DROP TABLE IF EXISTS "history_series";
 DROP SEQUENCE IF EXISTS history_series_history_series_id_seq;
