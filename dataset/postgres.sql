@@ -160,14 +160,16 @@ CREATE TABLE "public"."profile" (
     "watchlist_id" integer NOT NULL,
     "history_id" integer NOT NULL,
     "country" character varying(255) NOT NULL,
+    "is_trial" boolean NOT NULL,
+    "is_discount" boolean NOT NULL,
     CONSTRAINT "profile_pkey" PRIMARY KEY ("profile_id"),
     CONSTRAINT "profile_unique" UNIQUE ("profile_id")
 ) WITH (oids = false);
 
-INSERT INTO "profile" ("profile_id", "account_id", "profile_image", "profile_child", "age", "language", "watchlist_id", "history_id", "country") VALUES
-(1,	1,	'placeholder.jpeg',	't',	12,	'English',	1,	1,	'Brazil'),
-(2,	2,	'placeholder.jpeg',	'f',	20,	'English',	2,	2,	'Netherlands'),
-(3,	3,	'placeholder.jpeg',	'f',	18,	'English',	3,	3,	'Brazil');
+INSERT INTO "profile" ("profile_id", "account_id", "profile_image", "profile_child", "age", "language", "watchlist_id", "history_id", "country", "is_trial", "is_discount") VALUES
+(1,	1,	'placeholder.jpeg',	't',	12,	'English',	1,	1,	'Brazil', TRUE, FALSE),
+(2,	2,	'placeholder.jpeg',	'f',	20,	'English',	2,	2,	'Netherlands', FALSE, FALSE),
+(3,	3,	'placeholder.jpeg',	'f',	18,	'English',	3,	3,	'Brazil', FALSE, TRUE);
 
 
 DROP TABLE IF EXISTS "series";

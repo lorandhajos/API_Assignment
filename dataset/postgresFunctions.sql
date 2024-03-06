@@ -579,12 +579,14 @@ CREATE OR REPLACE PROCEDURE createSeriesElement(
   IN p_watchlist_id integer,
   IN p_history_id integer,
   IN p_country VARCHAR
+  IN p_is_trial boolean,
+  IN p_is_discount boolean
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
-  INSERT INTO profile (profile_id, account_id, profile_image, profile_child, age, language, watchlist_id, history_id, country)
-  VALUES (p_profile_id, p_account_id, p_profile_image, p_profile_child, p_age,  p_language, p_watchlist_id, p_history_id, p_country);
+  INSERT INTO profile (profile_id, account_id, profile_image, profile_child, age, language, watchlist_id, history_id, country, is_trial, is_discount)
+  VALUES (p_profile_id, p_account_id, p_profile_image, p_profile_child, p_age,  p_language, p_watchlist_id, p_history_id, p_country, p_is_discount, p_is_discount);
 END;
 $$;
 
@@ -597,13 +599,15 @@ CREATE OR REPLACE PROCEDURE updateProfileElement(
   IN p_profile_child boolean,
   IN p_age integer,
   IN p_language VARCHAR,
-  IN p_country VARCHAR
+  IN p_country VARCHAR,
+  IN p_is_trial boolean,
+  IN p_is_discount boolean
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
   UPDATE profile
-  SET profile_image = p_profile_image, profile_child = p_profile_child, age = p_age, language = p_language, country = p_country
+  SET profile_image = p_profile_image, profile_child = p_profile_child, age = p_age, language = p_language, country = p_country, is_trial = p_is_trial, is_discount = p_is_discount
   WHERE profile_id = p_profile_id;
 END;
 $$;
