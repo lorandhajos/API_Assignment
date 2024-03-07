@@ -15,11 +15,12 @@ from blueprints.login import Login
 from blueprints.movies import Movies
 from blueprints.profile import (AccessFilms, AccessSeries, History, Interests,
                                 Preferences, Watchlist)
+from blueprints.random import Random
 from blueprints.report import (Country, FilmNames, FilmViews, SeriesNames,
                                SeriesViews)
 from blueprints.series import Series
 from blueprints.token import Token
-from blueprints.random import Random
+from blueprints.user_login import UserLogin
 
 class ErrorResponseSchema(Schema):
     msg = fields.String(required=True)
@@ -162,6 +163,9 @@ app.add_url_rule("/report/country", view_func=country_view, methods=['GET'])
 login_view = Login.as_view('login')
 app.add_url_rule("/login", view_func=login_view, methods=['POST'])
 
+user_login_view = UserLogin.as_view('user_login')
+app.add_url_rule("/user_login", view_func=user_login_view, methods=['POST'])
+
 # Token
 refresh_view = Token.as_view('refresh')
 app.add_url_rule("/token_refresh", view_func=refresh_view, methods=['POST'])
@@ -230,6 +234,7 @@ with app.test_request_context():
 
     # Login
     spec.path(view=login_view)
+    spec.path(view=user_login_view)
 
     # Token
     spec.path(view=refresh_view)
