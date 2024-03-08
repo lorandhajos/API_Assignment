@@ -18,7 +18,7 @@ def init_database():
     os.environ['API_USER_NAME'] = username
 
 def on_starting(server):
-    required = ["DB_NAME", "DB_USER", "DB_PASS", "API_VERSION", "JWT_SECRET_KEY", "SECRET_KEY", "RANDOM_API_KEY"]
+    required = ["DB_NAME", "DB_USER", "DB_PASS", "API_VERSION", "JWT_SECRET_KEY", "SECRET_KEY"]
 
     if check_env_vars(required):
         init_database()
