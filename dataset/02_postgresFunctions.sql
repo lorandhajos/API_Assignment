@@ -355,6 +355,48 @@ BEGIN
 END;
 $$;
 
+/*genre*/
+
+CREATE OR REPLACE PROCEDURE createGenreElement(
+  IN p_genre_id integer,
+  IN p_name VARCHAR,
+  IN p_age_restriction integer
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  INSERT INTO genre (genre_id, name, age_restriction)
+  VALUES (p_genre_id, p_name, p_age_restriction);
+END;
+$$;
+
+CREATE VIEW selectGenre AS
+SELECT * FROM genre;
+
+CREATE OR REPLACE PROCEDURE updateGenreElement(
+  IN p_genre_id integer,
+  IN p_name VARCHAR,
+  IN p_age_restriction integer
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  UPDATE genre
+  SET name = p_name, age_restriction = p_age_restriction
+  WHERE genre_id = p_genre_id;
+END;
+$$;
+
+CREATE OR REPLACE PROCEDURE deleteGenreElement(
+  IN p_genre_id integer
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  DELETE FROM genre WHERE genre_id = p_genre_id;
+END;
+$$;
+
 /*calss genre movies*/
 
 CREATE OR REPLACE PROCEDURE createGenreMoviesElement(
