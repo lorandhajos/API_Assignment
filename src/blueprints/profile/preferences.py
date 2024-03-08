@@ -166,7 +166,7 @@ class Preferences(MethodView):
         except Exception:
             return generate_response({"msg": "Bad request"}, request, 400)
 
-        return generate_response(result, request)
+        return generate_response(result, request, 201)
 
     @jwt_required(optional=False)
     def delete(self, id):

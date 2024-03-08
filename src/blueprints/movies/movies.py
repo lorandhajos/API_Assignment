@@ -68,7 +68,7 @@ class Movies(MethodView):
         except Exception:
             return generate_response({"msg": "Bad request"}, request, 400)
 
-        return generate_response(result, 201)
+        return generate_response(result, request, 201)
 
     @jwt_required(optional=False)
     def get(self, id=None):
@@ -122,7 +122,7 @@ class Movies(MethodView):
         schema = MovieResponseSchema()
         result = schema.dump(result, many=True)
 
-        return generate_response(result, 201)
+        return generate_response(result, request)
 
     @jwt_required(optional=False)
     def put(self):
@@ -174,10 +174,10 @@ class Movies(MethodView):
         except Exception:
             return generate_response({"msg": "Bad request"}, request, 400)
 
-        return generate_response(result, 201)
+        return generate_response(result, request, 201)
 
     @jwt_required(optional=False)
-    def delete(self):
+    def delete(self, id):
         """
         Delete movie
         ---
@@ -217,8 +217,8 @@ class Movies(MethodView):
         try:
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                result = connection.execute(text(""))
+                result = connection.execute(text("CALL deleteMovieElement(:id);"), {"id": id}).first()
         except Exception:
             return generate_response({"msg": "Bad request"}, request, 400)
 
-        return generate_response(result, 201)
+        return generate_response(result, request)
