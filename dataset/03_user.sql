@@ -6,8 +6,6 @@ REVOKE ALL PRIVILEGES ON TABLE episode FROM api_user;
 
 REVOKE ALL PRIVILEGES ON TABLE genre FROM api_user;
 
-REVOKE ALL PRIVILEGES ON TABLE history FROM api_user;
-
 REVOKE ALL PRIVILEGES ON TABLE history_movies FROM api_user;
 
 REVOKE ALL PRIVILEGES ON TABLE interests FROM api_user;
@@ -23,8 +21,6 @@ REVOKE ALL PRIVILEGES ON TABLE series FROM api_user;
 REVOKE ALL PRIVILEGES ON TABLE series_genre FROM api_user;
 
 REVOKE ALL PRIVILEGES ON TABLE subscription FROM api_user;
-
-REVOKE ALL PRIVILEGES ON TABLE watchlist FROM api_user;
 
 REVOKE ALL PRIVILEGES ON TABLE watchlist_movies FROM api_user;
 
@@ -74,9 +70,9 @@ REVOKE ALL PRIVILEGES ON PROCEDURE deleteWatchlistSeriesElement(p_watchlist_seri
 
 REVOKE ALL PRIVILEGES ON PROCEDURE deleteWatchlistSeriesElement(p_watchlist_series_id integer) FROM api_user;
 
-REVOKE ALL PRIVILEGES ON PROCEDURE createHistoryMoviesElement(p_history_movies_id integer, p_history_id integer, p_movie_id integer) FROM api_user;
+REVOKE ALL PRIVILEGES ON PROCEDURE createHistoryMoviesElement(p_history_movies_id integer, p_history_id integer, p_movie_id integer, p_status_finished boolean, p_status_time interval) FROM api_user;
 
-REVOKE ALL PRIVILEGES ON PROCEDURE updateHistoryMoviesElement(p_history_movies_id integer, p_history_id integer, p_movie_id integer) FROM api_user;
+REVOKE ALL PRIVILEGES ON PROCEDURE updateHistoryMoviesElement(p_history_movies_id integer, p_history_id integer, p_movie_id integer, p_status_finished boolean, p_status_time interval) FROM api_user;
 
 REVOKE ALL PRIVILEGES ON PROCEDURE deleteHistoryMoviesElement(p_history_movies_id integer) FROM api_user;
 
@@ -122,15 +118,15 @@ REVOKE ALL PRIVILEGES ON PROCEDURE updateSeriesElement(p_series_id integer, p_ti
 
 REVOKE ALL PRIVILEGES ON PROCEDURE deleteSeriesElement(p_series_id integer) FROM api_user;
 
-REVOKE ALL PRIVILEGES ON PROCEDURE createSeriesElement( p_profile_id integer, p_account_id integer, p_profile_image VARCHAR, p_profile_child boolean, p_age integer, p_language VARCHAR, p_watchlist_id integer, p_history_id integer, p_country VARCHAR) FROM api_user;
+REVOKE ALL PRIVILEGES ON PROCEDURE createProfileElement(p_profile_id integer, p_account_id integer, p_profile_image VARCHAR, p_profile_child boolean, p_age integer, p_language VARCHAR, p_watchlist_id integer, p_history_id integer, p_country VARCHAR, p_is_trial boolean, p_is_discount boolean) FROM api_user;
 
-REVOKE ALL PRIVILEGES ON PROCEDURE updateProfileElement(p_profile_id integer, p_profile_image VARCHAR, p_profile_child boolean, p_age integer, p_language VARCHAR, p_country VARCHAR) FROM api_user;
+REVOKE ALL PRIVILEGES ON PROCEDURE updateProfileElement(p_profile_id integer, p_account_id integer, p_profile_image VARCHAR, p_profile_child boolean, p_age integer, p_language VARCHAR, p_country VARCHAR, p_is_trial boolean, p_is_discount boolean) FROM api_user;
 
 REVOKE ALL PRIVILEGES ON PROCEDURE deleteProfileElement(p_profile_id integer) FROM api_user;
 
-REVOKE ALL PRIVILEGES ON PROCEDURE createAccountElement(p_account_id integer, p_email VARCHAR, p_password VARCHAR, p_payment_method VARCHAR, p_blocked boolean, p_login_attempts integer, p_last_login date, p_subscription_id integer) FROM api_user;
+REVOKE ALL PRIVILEGES ON PROCEDURE createAccountElement(p_account_id integer, p_profile_id integer, p_email VARCHAR, p_password VARCHAR, p_payment_method VARCHAR, p_blocked boolean, p_login_attempts integer, p_last_login date, p_subscription_id integer) FROM api_user;
 
-REVOKE ALL PRIVILEGES ON PROCEDURE updateAccountElement(p_account_id integer, p_email VARCHAR, p_password VARCHAR, p_payment_method VARCHAR, p_blocked boolean, p_login_attempts integer, p_last_login date, p_subscription_id integer) FROM api_user;
+REVOKE ALL PRIVILEGES ON PROCEDURE updateAccountElement(p_account_id integer, p_profile_id integer, p_email VARCHAR, p_password VARCHAR, p_payment_method VARCHAR, p_blocked boolean, p_login_attempts integer, p_last_login date, p_subscription_id integer) FROM api_user;
 
 REVOKE ALL PRIVILEGES ON PROCEDURE deleteAccountElement(p_account_id integer) FROM api_user;
 
@@ -144,8 +140,6 @@ REVOKE ALL PRIVILEGES ON TABLE account FROM junior;
 
 REVOKE ALL PRIVILEGES ON TABLE genre FROM junior;
 
-REVOKE ALL PRIVILEGES ON TABLE history FROM junior;
-
 REVOKE ALL PRIVILEGES ON TABLE history_movies FROM junior;
 
 REVOKE ALL PRIVILEGES ON TABLE interests FROM junior;
@@ -157,8 +151,6 @@ REVOKE ALL PRIVILEGES ON TABLE profile FROM junior;
 REVOKE ALL PRIVILEGES ON TABLE series_genre FROM junior;
 
 REVOKE ALL PRIVILEGES ON TABLE subscription FROM junior;
-
-REVOKE ALL PRIVILEGES ON TABLE watchlist FROM junior;
 
 REVOKE ALL PRIVILEGES ON TABLE watchlist_movies FROM junior;
 
