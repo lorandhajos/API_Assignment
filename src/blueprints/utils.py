@@ -8,7 +8,8 @@ from dicttoxml import dicttoxml
 from flask import jsonify
 from sqlalchemy import create_engine
 
-key = b64decode(os.environ.get('SECRET_KEY'))
+if os.environ.get('SECRET_KEY'):
+    key = b64decode(os.environ.get('SECRET_KEY'))
 
 def get_db_engine(data):
     host = 'localhost' if os.environ.get('FLASK_ENV') == 'development' else 'db'
@@ -46,3 +47,9 @@ def decrypt(data):
     cipher = ChaCha20.new(key=key, nonce=nonce)
 
     return cipher.decrypt(ciphertext).decode('utf-8')
+
+def check_env_vars(vars_list):
+    for var in vars_list:
+        if os.getenv(var) is None:
+            return False
+    return True
