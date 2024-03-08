@@ -70,7 +70,7 @@ class Series(MethodView):
         except Exception:
             return generate_response({"msg": "Bad request"}, request, 400)
 
-        return generate_response(result, 201)
+        return generate_response(result, request, 201)
 
     @jwt_required(optional=False)
     def get(self, id=None):
@@ -113,14 +113,14 @@ class Series(MethodView):
         try:
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                if id is None: 
+                if id is None:
                     result = connection.execute(text("SELECT * FROM selectSeries;")).fetchall()
                 else:
                     result = connection.execute(text("SELECT * FROM selectSeries WHERE series_id = :id;"), {"id": id}).first()
         except Exception:
             return generate_response({"msg": "Bad request"}, request, 400)
 
-        return generate_response(result, 200)
+        return generate_response(result, request)
 
     @jwt_required(optional=False)
     def put(self, id):
@@ -174,7 +174,7 @@ class Series(MethodView):
         except Exception:
             return generate_response({"msg": "Bad request"}, request, 400)
 
-        return generate_response(result, 200)
+        return generate_response(result, request)
 
     @jwt_required(optional=False)
     def delete(self, id):
@@ -221,4 +221,4 @@ class Series(MethodView):
         except Exception:
             return generate_response({"msg": "Bad request"}, request, 400)
 
-        return generate_response(result, 200)
+        return generate_response(result, request)
