@@ -17,20 +17,17 @@ flowchart LR
 
 ## Backups
 
-For backups we suggest following the 3-2-1 rule.
+For backups we suggest following the 3-2-1 rule. That means.
 
-+ Production data (Copy 1, Production server)
-+ Backup (Copy 2, On-site server)
-+ Disaster recovery (Copy 3, Off-site server).
++ 3 Copies of Data – Have three copies of data
++ 2 Different Media – Use two different media types for storing the data.
++ 1 Copy Offsite – Keep one copy offsite to prevent the possibility of data loss due to a site-specific failure.
 
-We suggest using cron to automatically create a backup of the database daily using ```backup.sh```.
-The backup file should then be copied over to a separate on-site file storage server.
+We have created two scripts to help with the backup and restore process.
+These create/restore a snapshot of the database, and are called ```backup.sh``` and ```restore.sh```.
 
-The backups should be copied to the off-site disaster recovery media at least once a week.
-
-The backups should be retained for a maximum of one week.
-
-You can use the ```restore.sh``` script to restore a backup. But make sure to stop docker first and it may cause issues when restoring.
+The number of backups stored should be minimized. The retention period for the stored backups should also be minimized.
+Our advice is to not keep backup files for longer then 1 month.
 
 ## API
 
@@ -196,12 +193,12 @@ We decided to use PostgreSQL for our database because none in our team had any e
 ![ERD](erd.jpg "ERD")
 
 ### Views, stored procedures, triggers, functions
-For this project we have used extensively several elements of postgres which allow to preduild querries. Mostly functions and stored procedures were implemented for the APIs.
+For this project we have used extensively several elements of postgres which allow to prebuilt queries. Mostly functions and stored procedures were implemented for the APIs.
 
-Most of the prebuild querries are functions and stored procedures. The reson why this was chosen is because functions over views or stored procedures is because functions have several advantages over views and stored procedures, at least in the cases that they were used.
+Most of the prebuilt queries are functions and stored procedures. The reason why this was chosen is because functions over views or stored procedures is because functions have several advantages over views and stored procedures, at least in the cases that they were used.
 
-One of the main advantage of a function over a view is that a function can accept parameters, while the view cant. This means that functions are clearly better in cases where a specific piece of data needs to be extracted, such as the age of a specific profile (because the id is provided as a parameter, which views cant accept). However, some of the postgres functions that were created do not have any parameters. They could be replaced with a view, however for the sake of standartisation, functions were still implemented.
+One of the main advantage of a function over a view is that a function can accept parameters, while the view cant. This means that functions are clearly better in cases where a specific piece of data needs to be extracted, such as the age of a specific profile (because the id is provided as a parameter, which views cant accept). However, some of the postgres functions that were created do not have any parameters. They could be replaced with a view, however for the sake of standardization, functions were still implemented.
 
-For our case the triggers are not really helpful. Triggers trigger whenever a specific event occurs such as select querry. This functionality is not needed for the sake of the project. One of the main reasons is that the database api user has no rights to execute querries on the tables(for data security and integrity), the api user can only execute functions and that would make the trigger redundant.
+For our case the triggers are not really helpful. Triggers trigger whenever a specific event occurs such as select query. This functionality is not needed for the sake of the project. One of the main reasons is that the database api user has no rights to execute queries on the tables(for data security and integrity), the api user can only execute functions and that would make the trigger redundant.
 
-Stored procedures are used but not that extensively. Compared to functions they do not have a return value of any sort, which makes them useful for querries which change the database, but not the ones which extract information. Thus they are used for insert and update querries.
+Stored procedures are used but not that extensively. Compared to functions they do not have a return value of any sort, which makes them useful for queries which change the database, but not the ones which extract information. Thus they are used for insert and update queries.
