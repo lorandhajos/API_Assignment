@@ -674,3 +674,19 @@ BEGIN
   DELETE FROM account WHERE account_id = p_account_id;
 END;
 $$;
+
+/*Ensuring that the account can have only 4 profiles*/
+CREATE OR REPLACE FUNCTION check_profile_limit()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF (SELECT COUNT(*) FROM account WHERE profile_id = NEW.profile_id) >= 4 THEN
+        RAISE EXCEPTION 'Maximum limit of profiles (4) reached for this account';
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create a trigger to call the trigger function before insertion
+CREATE TRIGGER enforce_profile_limit
+BEFORE INSERT ON profile
+FOR EACH ROW EXECUTE FUNCTION check_profile_limit();

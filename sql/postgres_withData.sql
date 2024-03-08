@@ -213,9 +213,9 @@ CREATE TABLE "public"."subscription" (
 ) WITH (oids = false);
 
 INSERT INTO "subscription" ("subscription_id", "description", "subscription_price") VALUES
-(1,	'Ubscription for 1 person',	7.99),
-(2,	'Subscription for up to 5 people',	11.99),
-(3,	'Student subscription',	5.99);
+(1,	'SD',	7.99),
+(2,	'HD',	10.99),
+(3,	'UHD',	13.99);
 
 DROP TABLE IF EXISTS "watchlist_movies";
 DROP SEQUENCE IF EXISTS watchlist_movies_watchlist_movies_id_seq;
