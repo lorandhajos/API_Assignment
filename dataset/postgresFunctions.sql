@@ -571,7 +571,6 @@ $$;
 
 CREATE OR REPLACE PROCEDURE createSeriesElement(
   IN p_profile_id integer,
-  IN p_account_id integer,
   IN p_profile_image VARCHAR,
   IN p_profile_child boolean,
   IN p_age integer,
@@ -585,8 +584,8 @@ CREATE OR REPLACE PROCEDURE createSeriesElement(
 LANGUAGE plpgsql
 AS $$
 BEGIN
-  INSERT INTO profile (profile_id, account_id, profile_image, profile_child, age, language, watchlist_id, history_id, country, is_trial, is_discount)
-  VALUES (p_profile_id, p_account_id, p_profile_image, p_profile_child, p_age,  p_language, p_watchlist_id, p_history_id, p_country, p_is_discount, p_is_discount);
+  INSERT INTO profile (profile_id, profile_image, profile_child, age, language, watchlist_id, history_id, country, is_trial, is_discount)
+  VALUES (p_profile_id, p_profile_image, p_profile_child, p_age,  p_language, p_watchlist_id, p_history_id, p_country, p_is_discount, p_is_discount);
 END;
 $$;
 
@@ -626,6 +625,7 @@ $$;
 
 CREATE OR REPLACE PROCEDURE createAccountElement(
   IN p_account_id integer,
+  IN p_profile_id integer,
   IN p_email VARCHAR,
   IN p_password VARCHAR,
   IN p_payment_method VARCHAR,
@@ -637,8 +637,8 @@ CREATE OR REPLACE PROCEDURE createAccountElement(
 LANGUAGE plpgsql
 AS $$
 BEGIN
-  INSERT INTO account (account_id, email, password, payment_method, blocked, login_attempts, last_login, subscription_id)
-  VALUES (p_account_id, p_email, p_password, p_payment_method, p_blocked, p_login_attempts, p_last_login, p_subscription_id);
+  INSERT INTO account (account_id, profile_id, email, password, payment_method, blocked, login_attempts, last_login, subscription_id)
+  VALUES (p_account_id, p_profile_id, p_email, p_password, p_payment_method, p_blocked, p_login_attempts, p_last_login, p_subscription_id);
 END;
 $$;
 
@@ -646,8 +646,9 @@ CREATE VIEW selectAccount AS
 SELECT * FROM account;
 
 CREATE OR REPLACE PROCEDURE updateAccountElement(
-IN p_account_id integer,
-IN p_email VARCHAR,
+  IN p_account_id integer,
+  IN p_profile_id integer,
+  IN p_email VARCHAR,
   IN p_password VARCHAR,
   IN p_payment_method VARCHAR,
   IN p_blocked boolean,
@@ -659,7 +660,7 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
   UPDATE account
-  SET email = p_email, password = p_password, payment_method = p_payment_method, blocked = p_blocked, login_attempts = p_login_attempts, subscription_id = p_subscription_id
+  SET p_profile_id = profile_id, email = p_email, password = p_password, payment_method = p_payment_method, blocked = p_blocked, login_attempts = p_login_attempts, subscription_id = p_subscription_id
   WHERE account_id = p_account_id;
 END;
 $$;

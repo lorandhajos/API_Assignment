@@ -8,6 +8,7 @@ CREATE SEQUENCE account_account_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 214748364
 
 CREATE TABLE "public"."account" (
     "account_id" integer DEFAULT nextval('account_account_id_seq') NOT NULL,
+    "profile_id" integer DEFAULT NOT NULL,
     "email" character varying(255) NOT NULL,
     "password" character varying(255) NOT NULL,
     "payment_method" character varying(255) NOT NULL,
@@ -19,10 +20,10 @@ CREATE TABLE "public"."account" (
     CONSTRAINT "account_unique" UNIQUE ("account_id", "email")
 ) WITH (oids = false);
 
-INSERT INTO "account" ("account_id", "email", "password", "payment_method", "blocked", "login_attempts", "last_login", "subscription_id") VALUES
-(2,	'test.eamil@tetst.com',	'7c4a8d09ca3762af61e59520943dc26494f8941b',	'MasterCard',	'f',	0,	'2023-12-11',	2),
-(3,	'email@test.com',	'20eabe5d64b0e216796e834f52d61fd0b70332fc',	'iDeal',	'f',	0,	'2023-12-11',	3),
-(1,	'email.email@test.com',	'8cb2237d0679ca88db6464eac60da96345513964',	'Visa',	'f',	0,	'2023-12-11',	1);
+INSERT INTO "account" ("account_id", "profile_id", "email", "password", "payment_method", "blocked", "login_attempts", "last_login", "subscription_id") VALUES
+(2, 1, 'test.eamil@tetst.com',	'7c4a8d09ca3762af61e59520943dc26494f8941b',	'MasterCard',	'f',	0,	'2023-12-11',	2),
+(3, 2,	'email@test.com',	'20eabe5d64b0e216796e834f52d61fd0b70332fc',	'iDeal',	'f',	0,	'2023-12-11',	3),
+(1, 3,	'email.email@test.com',	'8cb2237d0679ca88db6464eac60da96345513964',	'Visa',	'f',	0,	'2023-12-11',	1);
 
 DROP TABLE IF EXISTS "episode";
 DROP SEQUENCE IF EXISTS episode_episode_id_seq;
@@ -152,7 +153,6 @@ CREATE SEQUENCE profile_profile_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 214748364
 
 CREATE TABLE "public"."profile" (
     "profile_id" integer DEFAULT nextval('profile_profile_id_seq') NOT NULL,
-    "account_id" integer NOT NULL,
     "profile_image" character varying(255) DEFAULT 'placeholder.jpeg' NOT NULL,
     "profile_child" boolean DEFAULT false,
     "age" integer NOT NULL,
@@ -167,9 +167,9 @@ CREATE TABLE "public"."profile" (
 ) WITH (oids = false);
 
 INSERT INTO "profile" ("profile_id", "account_id", "profile_image", "profile_child", "age", "language", "watchlist_id", "history_id", "country", "is_trial", "is_discount") VALUES
-(1,	1,	'placeholder.jpeg',	't',	12,	'English',	1,	1,	'Brazil', TRUE, FALSE),
-(2,	2,	'placeholder.jpeg',	'f',	20,	'English',	2,	2,	'Netherlands', FALSE, FALSE),
-(3,	3,	'placeholder.jpeg',	'f',	18,	'English',	3,	3,	'Brazil', FALSE, TRUE);
+(1,	'placeholder.jpeg',	't',	12,	'English',	1,	1,	'Brazil', TRUE, FALSE),
+(2,	'placeholder.jpeg',	'f',	20,	'English',	2,	2,	'Netherlands', FALSE, FALSE),
+(3,	'placeholder.jpeg',	'f',	18,	'English',	3,	3,	'Brazil', FALSE, TRUE);
 
 
 DROP TABLE IF EXISTS "series";
@@ -266,7 +266,6 @@ ALTER TABLE ONLY "public"."interests" ADD CONSTRAINT "fk_profile" FOREIGN KEY (p
 ALTER TABLE ONLY "public"."movie_genre" ADD CONSTRAINT "fk_genre" FOREIGN KEY (genre_id) REFERENCES genre(genre_id) NOT DEFERRABLE;
 ALTER TABLE ONLY "public"."movie_genre" ADD CONSTRAINT "fk_movie" FOREIGN KEY (movie_id) REFERENCES movie(movie_id) NOT DEFERRABLE;
 
-ALTER TABLE ONLY "public"."profile" ADD CONSTRAINT "fk_account" FOREIGN KEY (account_id) REFERENCES account(account_id) NOT DEFERRABLE;
 ALTER TABLE ONLY "public"."profile" ADD CONSTRAINT "fk_watchlist" FOREIGN KEY (watchlist_id) REFERENCES profile(watchlist_id) NOT DEFERRABLE;
 
 ALTER TABLE ONLY "public"."series_genre" ADD CONSTRAINT "fk_genre" FOREIGN KEY (genre_id) REFERENCES genre(genre_id) NOT DEFERRABLE;
@@ -277,3 +276,5 @@ ALTER TABLE ONLY "public"."watchlist_movies" ADD CONSTRAINT "fk_watchlist" FOREI
 
 ALTER TABLE ONLY "public"."watchlist_series" ADD CONSTRAINT "fk_series" FOREIGN KEY (series_id) REFERENCES series(series_id) NOT DEFERRABLE;
 ALTER TABLE ONLY "public"."watchlist_series" ADD CONSTRAINT "fk_watchlist" FOREIGN KEY (watchlist_id) REFERENCES profile(watchlist_id) NOT DEFERRABLE;
+
+ALTER TABLE ONLY "public"."account" ADD CONSTRAINT "fk_account" FOREIGN KEY (profile_id) REFERENCES profile(profile_id) NOT DEFERRABLE;
