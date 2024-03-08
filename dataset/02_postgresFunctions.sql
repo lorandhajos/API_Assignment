@@ -577,7 +577,7 @@ CREATE OR REPLACE PROCEDURE createSeriesElement(
   IN p_language VARCHAR,
   IN p_watchlist_id integer,
   IN p_history_id integer,
-  IN p_country VARCHAR
+  IN p_country VARCHAR,
   IN p_is_trial boolean,
   IN p_is_discount boolean
 )
