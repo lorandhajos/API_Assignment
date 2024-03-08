@@ -56,13 +56,16 @@ class Interests(MethodView):
             return generate_response({"msg": "Bad username or password"}, request, 401)
 
         try:
+            profile_id = request.json.get('profile_id')
+            genre_id = request.json.get('genre_id')
+
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                result = connection.execute(text(""))
+                result = connection.execute(text("CALL createInterestElement(:profile_id, :genre_id);"), {"profile_id": profile_id, "genre_id": genre_id}).first()
         except Exception:
             return generate_response({"msg": "Bad request"}, request, 400)
 
-        return generate_response(result, 201)
+        return generate_response(result, request, 201)
 
     @jwt_required(optional=False)
     def get(self, id=None):
@@ -112,11 +115,14 @@ class Interests(MethodView):
         try:
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                result = connection.execute(text(""))
+                if id is None:
+                    result = connection.execute(text("SELECT * FROM selectInterests;")).fetchall()
+                else:
+                    result = connection.execute(text("SELECT * FROM selectInterests WHERE profile_id = :id;"), {"id": id}).first()
         except Exception:
             return generate_response({"msg": "Bad request"}, request, 400)
 
-        return generate_response(result, 201)
+        return generate_response(result, request)
 
     @jwt_required(optional=False)
     def put(self, id):
@@ -168,13 +174,16 @@ class Interests(MethodView):
             return generate_response({"msg": "Bad username or password"}, request, 401)
 
         try:
+            genre_id = request.json.get('genre_id')
+            desired_genre_id = request.json.get('desired_genre_id')
+
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                result = connection.execute(text(""))
+                result = connection.execute(text("CALL updateInterestElement(:profile_id, :genre_id, :desired_genre_id);"), {"profile_id": id, "genre_id": genre_id, "desired_genre_id": desired_genre_id})
         except Exception:
             return generate_response({"msg": "Bad request"}, request, 400)
 
-        return generate_response(result, 201)
+        return generate_response(result, request, 201)
 
     @jwt_required(optional=False)
     def delete(self, id):
@@ -224,8 +233,8 @@ class Interests(MethodView):
         try:
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                result = connection.execute(text(""))
+                result = connection.execute(text("CALL deleteInterestElement(:id);"), {"id": id}).first()
         except Exception:
             return generate_response({"msg": "Bad request"}, request, 400)
 
-        return generate_response(result, 201)
+        return generate_response(result, request)
