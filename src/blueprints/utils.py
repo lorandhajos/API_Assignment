@@ -12,7 +12,7 @@ if os.environ.get('SECRET_KEY'):
     key = b64decode(os.environ.get('SECRET_KEY'))
 
 def get_db_engine(data):
-    host = 'localhost' if os.environ.get('FLASK_ENV') == 'development' else 'db'
+    host = 'db'
 
     user = data.split(':')[0]
     password = data.split(':')[1]
