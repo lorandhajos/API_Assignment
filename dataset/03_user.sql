@@ -70,9 +70,9 @@ REVOKE ALL PRIVILEGES ON PROCEDURE deleteWatchlistSeriesElement(p_watchlist_seri
 
 REVOKE ALL PRIVILEGES ON PROCEDURE deleteWatchlistSeriesElement(p_watchlist_series_id integer) FROM api_user;
 
-REVOKE ALL PRIVILEGES ON PROCEDURE createHistoryMoviesElement(p_history_movies_id integer, p_history_id integer, p_movie_id integer) FROM api_user;
+REVOKE ALL PRIVILEGES ON PROCEDURE createHistoryMoviesElement(p_history_movies_id integer, p_history_id integer, p_movie_id integer, p_status_finished boolean, p_status_time interval) FROM api_user;
 
-REVOKE ALL PRIVILEGES ON PROCEDURE updateHistoryMoviesElement(p_history_movies_id integer, p_history_id integer, p_movie_id integer) FROM api_user;
+REVOKE ALL PRIVILEGES ON PROCEDURE updateHistoryMoviesElement(p_history_movies_id integer, p_history_id integer, p_movie_id integer, p_status_finished boolean, p_status_time interval) FROM api_user;
 
 REVOKE ALL PRIVILEGES ON PROCEDURE deleteHistoryMoviesElement(p_history_movies_id integer) FROM api_user;
 
@@ -118,9 +118,9 @@ REVOKE ALL PRIVILEGES ON PROCEDURE updateSeriesElement(p_series_id integer, p_ti
 
 REVOKE ALL PRIVILEGES ON PROCEDURE deleteSeriesElement(p_series_id integer) FROM api_user;
 
-REVOKE ALL PRIVILEGES ON PROCEDURE createSeriesElement( p_profile_id integer, p_account_id integer, p_profile_image VARCHAR, p_profile_child boolean, p_age integer, p_language VARCHAR, p_watchlist_id integer, p_history_id integer, p_country VARCHAR) FROM api_user;
+REVOKE ALL PRIVILEGES ON PROCEDURE createProfileElement(p_profile_id integer, p_account_id integer, p_profile_image VARCHAR, p_profile_child boolean, p_age integer, p_language VARCHAR, p_watchlist_id integer, p_history_id integer, p_country VARCHAR, p_is_trial boolean, p_is_discount boolean) FROM api_user;
 
-REVOKE ALL PRIVILEGES ON PROCEDURE updateProfileElement(p_profile_id integer, p_profile_image VARCHAR, p_profile_child boolean, p_age integer, p_language VARCHAR, p_country VARCHAR) FROM api_user;
+REVOKE ALL PRIVILEGES ON PROCEDURE updateProfileElement(p_profile_id integer, p_account_id integer, p_profile_image VARCHAR, p_profile_child boolean, p_age integer, p_language VARCHAR, p_country VARCHAR, p_is_trial boolean, p_is_discount boolean) FROM api_user;
 
 REVOKE ALL PRIVILEGES ON PROCEDURE deleteProfileElement(p_profile_id integer) FROM api_user;
 

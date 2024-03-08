@@ -569,8 +569,9 @@ $$;
 
 /*class profile*/
 
-CREATE OR REPLACE PROCEDURE createSeriesElement(
+CREATE OR REPLACE PROCEDURE createProfileElement(
   IN p_profile_id integer,
+  IN p_account_id integer,
   IN p_profile_image VARCHAR,
   IN p_profile_child boolean,
   IN p_age integer,
@@ -594,6 +595,7 @@ SELECT * FROM profile;
 
 CREATE OR REPLACE PROCEDURE updateProfileElement(
   IN p_profile_id integer,
+  IN p_account_id integer,
   IN p_profile_image VARCHAR,
   IN p_profile_child boolean,
   IN p_age integer,

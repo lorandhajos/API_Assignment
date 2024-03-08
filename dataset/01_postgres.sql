@@ -171,7 +171,6 @@ INSERT INTO "profile" ("profile_id", "profile_image", "profile_child", "age", "l
 (2,	'placeholder.jpeg',	'f',	20,	'English',	2,	2,	'Netherlands', FALSE, FALSE),
 (3,	'placeholder.jpeg',	'f',	18,	'English',	3,	3,	'Brazil', FALSE, TRUE);
 
-/*!!!*/
 DROP TABLE IF EXISTS "series";
 DROP SEQUENCE IF EXISTS series_series_id_seq;
 CREATE SEQUENCE series_series_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1;
@@ -200,7 +199,6 @@ INSERT INTO "series_genre" ("series_id", "genre_id") VALUES
 (2,	3),
 (3,	1);
 
-/*!!!*/
 DROP TABLE IF EXISTS "subscription";
 DROP SEQUENCE IF EXISTS subscription_subscription_id_seq;
 CREATE SEQUENCE subscription_subscription_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1;
@@ -218,8 +216,6 @@ INSERT INTO "subscription" ("subscription_id", "description", "subscription_pric
 (2,	'HD',	10.99),
 (3,	'UHD',	13.99);
 
-
-/*Watchlist does not exist in anyform*/
 DROP TABLE IF EXISTS "watchlist_movies";
 DROP SEQUENCE IF EXISTS watchlist_movies_watchlist_movies_id_seq;
 CREATE SEQUENCE watchlist_movies_watchlist_movies_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1;
