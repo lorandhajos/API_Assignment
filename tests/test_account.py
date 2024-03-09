@@ -25,7 +25,7 @@ class TestAccount(unittest.TestCase):
             'Accept': 'application/json',
             'Authorization': f'Bearer {self.token}'
         }
-        result = requests.get('http://localhost/api/v1/account/1/', headers=headers)
+        result = requests.get('http://localhost/api/v1/account/1', headers=headers)
 
         self.assertEqual(result.status_code, 200)
 
@@ -35,6 +35,7 @@ class TestAccount(unittest.TestCase):
             'Authorization': f'Bearer {self.token}'
         }
         data = {
+            "id": 1,
             "email": "example@email.com",
             "password": "example",
             "payment_method": "example",
@@ -61,7 +62,7 @@ class TestAccount(unittest.TestCase):
             "last_login": "2021-01-01",
             "subscription_id": 1
         }
-        result = requests.put('http://localhost/api/v1/account', headers=headers, json=data)
+        result = requests.put('http://localhost/api/v1/account/1', headers=headers, json=data)
 
         self.assertEqual(result.status_code, 200)
 
@@ -70,6 +71,6 @@ class TestAccount(unittest.TestCase):
             'Accept': 'application/json',
             'Authorization': f'Bearer {self.token}'
         }
-        result = requests.delete('http://localhost/api/v1/account', headers=headers)
+        result = requests.delete('http://localhost/api/v1/account/1', headers=headers)
 
         self.assertEqual(result.status_code, 200)
