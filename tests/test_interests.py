@@ -25,7 +25,7 @@ class TestInterests(unittest.TestCase):
             'Accept': 'application/json',
             'Authorization': f'Bearer {self.token}'
         }
-        result = requests.get('http://localhost/api/v1/interests/1/', headers=headers)
+        result = requests.get('http://localhost/api/v1/interests/1', headers=headers)
 
         self.assertEqual(result.status_code, 200)
 
@@ -40,7 +40,7 @@ class TestInterests(unittest.TestCase):
         }
         result = requests.post('http://localhost/api/v1/interests', headers=headers, json=data)
 
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.status_code, 201)
 
     def test_put_interests(self):
         headers = {
@@ -49,9 +49,9 @@ class TestInterests(unittest.TestCase):
         }
         data = {
             "genre_id": 1,
-            "profile_id": 1
+            "desired_genre_id": 1
         }
-        result = requests.put('http://localhost/api/v1/interests/1/', headers=headers, json=data)
+        result = requests.put('http://localhost/api/v1/interests/1', headers=headers, json=data)
 
         self.assertEqual(result.status_code, 200)
 
@@ -60,6 +60,6 @@ class TestInterests(unittest.TestCase):
             'Accept': 'application/json',
             'Authorization': f'Bearer {self.token}'
         }
-        result = requests.delete('http://localhost/api/v1/interests', headers=headers)
+        result = requests.delete('http://localhost/api/v1/interests/1', headers=headers)
 
         self.assertEqual(result.status_code, 200)
