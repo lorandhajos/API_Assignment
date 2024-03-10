@@ -818,7 +818,7 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
   INSERT INTO account (email, password, payment_method, blocked, login_attempts, last_login, subscription_id)
-  VALUES (p_profile_id, p_email, p_password, p_payment_method, p_blocked, p_login_attempts, p_last_login, p_subscription_id);
+  VALUES (p_email, p_password, p_payment_method, p_blocked, p_login_attempts, p_last_login, p_subscription_id);
 END;
 $$;
 
