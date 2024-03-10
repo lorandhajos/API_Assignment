@@ -13,8 +13,7 @@ from blueprints.account import Account, Profile, Subscription
 from blueprints.genre import Genre
 from blueprints.login import Login
 from blueprints.movies import Movies
-from blueprints.profile import (AccessFilms, AccessSeries, Interests,
-                                Preferences)
+from blueprints.profile import (AccessFilms, AccessSeries, Interests)
 from blueprints.random import Random
 from blueprints.report import (Country, FilmNames, FilmViews, SeriesNames,
                                SeriesViews)
@@ -113,14 +112,6 @@ app.add_url_rule('/interests/', defaults={'id': None}, view_func=interests_view_
 app.add_url_rule('/interests/', view_func=interests_view_post, methods=['POST',])
 app.add_url_rule('/interests/<int:id>', view_func=interests_view_crud, methods=['GET', 'PUT', 'DELETE'])
 
-preferences_view_get = Preferences.as_view('preferences_get')
-preferences_view_post = Preferences.as_view('preferences_post')
-preferences_view_crud = Preferences.as_view('preferences_crud')
-
-app.add_url_rule('/preferences/', defaults={'id': None}, view_func=preferences_view_get, methods=['GET',])
-app.add_url_rule('/preferences/', view_func=preferences_view_post, methods=['POST',])
-app.add_url_rule('/preferences/<int:id>', view_func=preferences_view_crud, methods=['GET', 'PUT', 'DELETE'])
-
 access_films_view = AccessFilms.as_view('access_films')
 app.add_url_rule('/profile/<int:profile_id>/access_films/<int:film_id>', view_func=access_films_view, methods=['GET',])
 
@@ -192,10 +183,6 @@ with app.test_request_context():
     spec.path(view=interests_view_get)
     spec.path(view=interests_view_post)
     spec.path(view=interests_view_crud)
-
-    spec.path(view=preferences_view_get)
-    spec.path(view=preferences_view_post)
-    spec.path(view=preferences_view_crud)
 
     spec.path(view=access_films_view)
 
