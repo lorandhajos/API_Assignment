@@ -573,7 +573,7 @@ $$;
 CREATE VIEW selectSubscription AS
 SELECT * FROM subscription;
 
-CREATE OR REPLACE PROCEDURE updateUbscriptionElement(
+CREATE OR REPLACE PROCEDURE updateSubscriptionElement(
   IN p_subscription_id integer,
   IN p_description VARCHAR,
   IN p_price real
