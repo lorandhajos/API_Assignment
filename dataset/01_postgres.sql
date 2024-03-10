@@ -150,6 +150,7 @@ CREATE SEQUENCE profile_profile_id_seq INCREMENT 1 MINVALUE 4 MAXVALUE 214748364
 
 CREATE TABLE "public"."profile" (
     "profile_id" integer DEFAULT nextval('profile_profile_id_seq') NOT NULL,
+    "account_id" integer NOT NULL,
     "profile_image" character varying(255) DEFAULT 'placeholder.jpeg' NOT NULL,
     "profile_child" boolean DEFAULT false,
     "age" integer NOT NULL,
@@ -162,13 +163,14 @@ CREATE TABLE "public"."profile" (
     CONSTRAINT "profile_pkey" PRIMARY KEY ("profile_id"),
     CONSTRAINT "profile_unique" UNIQUE ("profile_id"),
     CONSTRAINT "profile_unique_history" UNIQUE ("history_id"),
-    CONSTRAINT "profile_unique_watchlist" UNIQUE ("watchlist_id")
+    CONSTRAINT "profile_unique_watchlist" UNIQUE ("watchlist_id"),
+    CONSTRAINT "profile_account_id_unique" UNIQUE ("account_id")
 ) WITH (oids = false);
 
-INSERT INTO "profile" ("profile_id", "profile_image", "profile_child", "age", "language", "watchlist_id", "history_id", "country", "is_trial", "is_discount") VALUES
-(1,	'placeholder.jpeg',	't',	12,	'English',	1,	1,	'Brazil', TRUE, FALSE),
-(2,	'placeholder.jpeg',	'f',	20,	'English',	2,	2,	'Netherlands', FALSE, FALSE),
-(3,	'placeholder.jpeg',	'f',	18,	'English',	3,	3,	'Brazil', FALSE, TRUE);
+INSERT INTO "profile" ("profile_id", "account_id", "profile_image", "profile_child", "age", "language", "watchlist_id", "history_id", "country", "is_trial", "is_discount") VALUES
+(1, 1,	'placeholder.jpeg',	't',	12,	'English',	1,	1,	'Brazil', TRUE, FALSE),
+(2, 2,	'placeholder.jpeg',	'f',	20,	'English',	2,	2,	'Netherlands', FALSE, FALSE),
+(3, 2,	'placeholder.jpeg',	'f',	18,	'English',	3,	3,	'Brazil', FALSE, TRUE);
 
 DROP TABLE IF EXISTS "series";
 DROP SEQUENCE IF EXISTS series_series_id_seq;
@@ -265,6 +267,7 @@ ALTER TABLE ONLY "public"."movie_genre" ADD CONSTRAINT "fk_genre" FOREIGN KEY (g
 ALTER TABLE ONLY "public"."movie_genre" ADD CONSTRAINT "fk_movie" FOREIGN KEY (movie_id) REFERENCES movie(movie_id) ON UPDATE CASCADE ON DELETE CASCADE NOT DEFERRABLE;
 
 ALTER TABLE ONLY "public"."profile" ADD CONSTRAINT "fk_watchlist" FOREIGN KEY (watchlist_id) REFERENCES profile(watchlist_id) ON UPDATE CASCADE ON DELETE CASCADE NOT DEFERRABLE;
+ALTER TABLE ONLY "public"."profile" ADD CONSTRAINT "fk_account" FOREIGN KEY (account_id) REFERENCES account(account_id) ON UPDATE CASCADE ON DELETE CASCADE NOT DEFERRABLE;
 
 ALTER TABLE ONLY "public"."series_genre" ADD CONSTRAINT "fk_genre" FOREIGN KEY (genre_id) REFERENCES genre(genre_id) ON UPDATE CASCADE ON DELETE CASCADE NOT DEFERRABLE;
 ALTER TABLE ONLY "public"."series_genre" ADD CONSTRAINT "fk_movie" FOREIGN KEY (series_id) REFERENCES series(series_id) ON UPDATE CASCADE ON DELETE CASCADE NOT DEFERRABLE;
