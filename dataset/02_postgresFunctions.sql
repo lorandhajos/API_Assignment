@@ -872,4 +872,4 @@ FOR EACH ROW EXECUTE FUNCTION check_profile_limit();
 
 /*View for the login*/
 CREATE VIEW selectLogin AS
-SELECT account_id, email, password;
+SELECT account_id, email, password FROM account;
