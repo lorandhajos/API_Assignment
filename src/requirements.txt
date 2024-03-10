@@ -1,6 +1,7 @@
 apispec==6.5.0
 apispec-webframeworks==1.0.0
 asgiref==3.7.2
+bcrypt==4.1.2
 blinker==1.7.0
 bokeh==3.3.4
 certifi==2024.2.2
