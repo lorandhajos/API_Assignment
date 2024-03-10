@@ -69,6 +69,7 @@ class Movies(MethodView):
             with engine.connect() as connection:
                 connection.execute(text("CALL createMovieElement(:title, :duration, :views);"),
                                         {"title": title, "duration": duration, "views": 0})
+                connection.commit()
         except Exception as e:
             print(e)
             return generate_response({"msg": "Bad request"}, request, 400)
@@ -188,6 +189,7 @@ class Movies(MethodView):
             with engine.connect() as connection:
                 connection.execute(text("CALL updateMovieElement(:id, :title, :duration, :views);"),
                                         {"id": id, "title": title, "duration": duration, "views": 0})
+                connection.commit()
         except Exception as e:
             print(e)
             return generate_response({"msg": "Bad request"}, request, 400)
@@ -233,10 +235,10 @@ class Movies(MethodView):
             return generate_response({"msg": "Bad username or password"}, request, 401)
 
         try:
-            # TODO: fix delete not working
             engine = get_db_engine(data)
             with engine.connect() as connection:
                 connection.execute(text("CALL deleteMovieElement(:id);"), {"id": id})
+                connection.commit()
         except Exception as e:
             print(e)
             return generate_response({"msg": "Bad request"}, request, 400)
