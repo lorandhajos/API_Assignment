@@ -35,7 +35,6 @@ class TestAccount(unittest.TestCase):
             'Authorization': f'Bearer {self.token}'
         }
         data = {
-            "id": 1,
             "email": "example@email.com",
             "password": "example",
             "payment_method": "example",
@@ -46,7 +45,7 @@ class TestAccount(unittest.TestCase):
         }
         result = requests.post('http://localhost/api/v1/account', headers=headers, json=data)
 
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.status_code, 201)
 
     def test_put_account(self):
         headers = {

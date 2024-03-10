@@ -9,7 +9,6 @@ from sqlalchemy.sql import text
 from ..utils import decrypt, generate_response, get_db_engine
 
 class AccountSchema(Schema):
-    account_id = fields.Integer(required=True)
     email = fields.Email(required=True)
     password = fields.String(required=True)
     payment_method = fields.String(required=True)
@@ -62,25 +61,14 @@ class Account(MethodView):
             return generate_response({"msg": "Bad username or password"}, request, 401)
 
         try:
-            # TODO: fix IDs
-            id = request.json.get('id')
-            email = request.json.get('email')
-            password = request.json.get('password')
-            payment_method = request.json.get('payment_method')
-            blocked = request.json.get('blocked')
-            login_attempts = request.json.get('login_attempts')
-            last_login = request.json.get('last_login')
-            subscription_id = request.json.get('subscription_id')
+            account_info = request.json
 
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                connection.execute(text("""CALL createAccountElement(:id, :email, :password,
+                connection.execute(text("""CALL createAccountElement(:email, :password,
                                         :payment_method, :blocked, :login_attempts, :last_login,
-                                        :subscription_id);"""),
-                                        {"id": id, "email": email, "password": password,
-                                         "payment_method": payment_method, "blocked": blocked,
-                                         "login_attempts": login_attempts, "last_login": last_login,
-                                         "subscription_id": subscription_id})
+                                        :subscription_id);"""), account_info)
+                connection.commit()
         except Exception as e:
             print(e)
             return generate_response({"msg": "Bad request"}, request, 400)
@@ -200,24 +188,14 @@ class Account(MethodView):
             return generate_response({"msg": "Bad username or password"}, request, 401)
 
         try:
-            # TODO: fix IDs
-            email = request.json.get('email')
-            password = request.json.get('password')
-            payment_method = request.json.get('payment_method')
-            blocked = request.json.get('blocked')
-            login_attempts = request.json.get('login_attempts')
-            last_login = request.json.get('last_login')
-            subscription_id = request.json.get('subscription_id')
+            account_info = request.json
 
             engine = get_db_engine(data)
             with engine.connect() as connection:
                 connection.execute(text("""CALL updateAccountElement(:id, :email, :password,
                                         :payment_method, :blocked, :login_attempts, :last_login,
-                                        :subscription_id);"""),
-                                        {"id": id, "email": email, "password": password,
-                                         "payment_method": payment_method, "blocked": blocked,
-                                         "login_attempts": login_attempts, "last_login": last_login,
-                                         "subscription_id": subscription_id})
+                                        :subscription_id);"""), account_info)
+                connection.commit()
         except Exception as e:
             print(e)
             return generate_response({"msg": "Bad request"}, request, 400)
@@ -273,6 +251,7 @@ class Account(MethodView):
             engine = get_db_engine(data)
             with engine.connect() as connection:
                 connection.execute(text("CALL deleteAccountElement(:id)"), {"id": id})
+                connection.commit()
         except Exception as e:
             print(e)
             return generate_response({"msg": "Bad request"}, request, 400)
