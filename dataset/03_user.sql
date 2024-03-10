@@ -102,7 +102,7 @@ REVOKE ALL PRIVILEGES ON PROCEDURE deleteSeriesGenreElement(p_genre_id integer, 
 
 REVOKE ALL PRIVILEGES ON PROCEDURE createSubscriptionElement(p_subscription_id integer, p_description VARCHAR, p_price real) FROM api_user;
 
-REVOKE ALL PRIVILEGES ON PROCEDURE updateUbscriptionElement(p_subscription_id integer, p_description VARCHAR, p_price real) FROM api_user;
+REVOKE ALL PRIVILEGES ON PROCEDURE updateSubscriptionElement(p_subscription_id integer, p_description VARCHAR, p_price real) FROM api_user;
 
 REVOKE ALL PRIVILEGES ON PROCEDURE deleteSubscriptionElement(p_subscription_id integer) FROM api_user;
 
@@ -124,11 +124,17 @@ REVOKE ALL PRIVILEGES ON PROCEDURE updateProfileElement(p_profile_id integer, p_
 
 REVOKE ALL PRIVILEGES ON PROCEDURE deleteProfileElement(p_profile_id integer) FROM api_user;
 
-REVOKE ALL PRIVILEGES ON PROCEDURE createAccountElement(p_account_id integer, p_profile_id integer, p_email VARCHAR, p_password VARCHAR, p_payment_method VARCHAR, p_blocked boolean, p_login_attempts integer, p_last_login date, p_subscription_id integer) FROM api_user;
+REVOKE ALL PRIVILEGES ON PROCEDURE createAccountElement(p_account_id integer, p_email VARCHAR, p_password VARCHAR, p_payment_method VARCHAR, p_blocked boolean, p_login_attempts integer, p_last_login date, p_subscription_id integer) FROM api_user;
 
-REVOKE ALL PRIVILEGES ON PROCEDURE updateAccountElement(p_account_id integer, p_profile_id integer, p_email VARCHAR, p_password VARCHAR, p_payment_method VARCHAR, p_blocked boolean, p_login_attempts integer, p_last_login date, p_subscription_id integer) FROM api_user;
+REVOKE ALL PRIVILEGES ON PROCEDURE updateAccountElement(p_account_id integer, p_email VARCHAR, p_password VARCHAR, p_payment_method VARCHAR, p_blocked boolean, p_login_attempts integer, p_last_login date, p_subscription_id integer) FROM api_user;
 
 REVOKE ALL PRIVILEGES ON PROCEDURE deleteAccountElement(p_account_id integer) FROM api_user;
+
+REVOKE ALL PRIVILEGES ON PROCEDURE createGenreElement(p_genre_id integer, p_name VARCHAR, p_age_restriction integer) FROM api_user;
+
+REVOKE ALL PRIVILEGES ON PROCEDURE updateGenreElement(p_genre_id integer, p_name VARCHAR, p_age_restriction integer) FROM api_user;
+
+REVOKE ALL PRIVILEGES ON PROCEDURE deleteGenreElement(p_genre_id integer) FROM api_user;
 
 CREATE USER authorisedDBUser ENCRYPTED PASSWORD 'yn5j1masd!';
 
@@ -169,3 +175,33 @@ CREATE ROLE senior;
 /*senior gets to keep the default acces rights*/
 
 GRANT senior TO authorisedDBUser WITH INHERIT TRUE;
+
+/*Grants for the views*/
+
+GRANT SELECT ON selectLogin TO api_user;
+
+GRANT SELECT ON selectWatchlistMovies TO api_user;
+
+GRANT SELECT ON selectWatchlistSeries TO api_user;
+
+GRANT SELECT ON selectHistoryMovies TO api_user;
+
+GRANT SELECT ON selectHistorySeries TO api_user;
+
+GRANT SELECT ON selectInterests TO api_user;
+
+GRANT SELECT ON selectGenre TO api_user;
+
+GRANT SELECT ON selectMoviesGenre TO api_user;
+
+GRANT SELECT ON selectseriesGenre TO api_user;
+
+GRANT SELECT ON selectSubscription TO api_user;
+
+GRANT SELECT ON selectMovie TO api_user;
+
+GRANT SELECT ON selectSeries TO api_user;
+
+GRANT SELECT ON selectProfile TO api_user;
+
+GRANT SELECT ON selectAccount TO api_user;

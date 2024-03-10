@@ -1,5 +1,6 @@
 import os
 
+import bcrypt
 from flask import request
 from flask.views import MethodView
 from flask_jwt_extended import create_access_token, create_refresh_token
@@ -55,11 +56,15 @@ class UserLogin(MethodView):
 
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                user_id = connection.execute(text("SELECT account_id from account WHERE email=:email AND password=:password"),
+                data = connection.execute(text("SELECT account_id, password FROM selectLogin WHERE email = :email;"),
                                              {"email": email, "password": password}).first()
 
-            result = encrypt(f"{data}:{user_id[0]}")
-        except Exception:
+            if not bcrypt.checkpw(password.encode('utf-8'), data[1].encode('utf-8')):
+                return generate_response({"msg": "Bad username or password"}, request, 401)
+
+            result = encrypt(f"{data}:{data[0]}")
+        except Exception as e:
+            print(e)
             return generate_response({"msg": "Bad username or password"}, request, 401)
 
         access_token = create_access_token(identity=result)

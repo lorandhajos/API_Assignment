@@ -16,7 +16,7 @@ class TestSubscriptions(unittest.TestCase):
             'Accept': 'application/json',
             'Authorization': f'Bearer {self.token}'
         }
-        result = requests.get('http://localhost/api/v1/subscriptions', headers=headers)
+        result = requests.get('http://localhost/api/v1/subscription', headers=headers)
 
         self.assertEqual(result.status_code, 200)
 
@@ -25,7 +25,7 @@ class TestSubscriptions(unittest.TestCase):
             'Accept': 'application/json',
             'Authorization': f'Bearer {self.token}'
         }
-        result = requests.get('http://localhost/api/v1/subscriptions/1/', headers=headers)
+        result = requests.get('http://localhost/api/v1/subscription/1', headers=headers)
 
         self.assertEqual(result.status_code, 200)
 
@@ -35,11 +35,12 @@ class TestSubscriptions(unittest.TestCase):
             'Authorization': f'Bearer {self.token}'
         }
         data = {
-            "name": "example"
+            "description": "example",
+            "subscription_price": 0
         }
-        result = requests.post('http://localhost/api/v1/subscriptions', headers=headers, json=data)
+        result = requests.post('http://localhost/api/v1/subscription', headers=headers, json=data)
 
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.status_code, 201)
 
     def test_put_subscriptions(self):
         headers = {
@@ -47,9 +48,10 @@ class TestSubscriptions(unittest.TestCase):
             'Authorization': f'Bearer {self.token}'
         }
         data = {
-            "name": "example"
+            "description": "example",
+            "subscription_price": 0
         }
-        result = requests.put('http://localhost/api/v1/subscriptions/1/', headers=headers, json=data)
+        result = requests.put('http://localhost/api/v1/subscription/1', headers=headers, json=data)
 
         self.assertEqual(result.status_code, 200)
 
@@ -58,6 +60,6 @@ class TestSubscriptions(unittest.TestCase):
             'Accept': 'application/json',
             'Authorization': f'Bearer {self.token}'
         }
-        result = requests.delete('http://localhost/api/v1/subscriptions', headers=headers)
+        result = requests.delete('http://localhost/api/v1/subscription/1', headers=headers)
 
         self.assertEqual(result.status_code, 200)

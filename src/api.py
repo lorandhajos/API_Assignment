@@ -13,8 +13,7 @@ from blueprints.account import Account, Profile, Subscription
 from blueprints.genre import Genre
 from blueprints.login import Login
 from blueprints.movies import Movies
-from blueprints.profile import (AccessFilms, AccessSeries, History, Interests,
-                                Preferences, Watchlist)
+from blueprints.profile import (AccessFilms, AccessSeries, Interests)
 from blueprints.random import Random
 from blueprints.report import (Country, FilmNames, FilmViews, SeriesNames,
                                SeriesViews)
@@ -105,14 +104,6 @@ app.add_url_rule('/series/', view_func=series_view_post, methods=['POST',])
 app.add_url_rule('/series/<int:id>', view_func=series_view_crud, methods=['GET', 'PUT', 'DELETE'])
 
 # Profile
-history_view_get = History.as_view('history_get')
-history_view_post = History.as_view('history_post')
-history_view_crud = History.as_view('history_crud')
-
-app.add_url_rule('/history/', defaults={'id': None}, view_func=history_view_get, methods=['GET',])
-app.add_url_rule('/history/', view_func=history_view_post, methods=['POST',])
-app.add_url_rule('/history/<int:id>', view_func=history_view_crud, methods=['GET', 'PUT', 'DELETE'])
-
 interests_view_get = Interests.as_view('interests_get')
 interests_view_post = Interests.as_view('interests_post')
 interests_view_crud = Interests.as_view('interests_crud')
@@ -121,27 +112,11 @@ app.add_url_rule('/interests/', defaults={'id': None}, view_func=interests_view_
 app.add_url_rule('/interests/', view_func=interests_view_post, methods=['POST',])
 app.add_url_rule('/interests/<int:id>', view_func=interests_view_crud, methods=['GET', 'PUT', 'DELETE'])
 
-preferences_view_get = Preferences.as_view('preferences_get')
-preferences_view_post = Preferences.as_view('preferences_post')
-preferences_view_crud = Preferences.as_view('preferences_crud')
-
-app.add_url_rule('/preferences/', defaults={'id': None}, view_func=preferences_view_get, methods=['GET',])
-app.add_url_rule('/preferences/', view_func=preferences_view_post, methods=['POST',])
-app.add_url_rule('/preferences/<int:id>', view_func=preferences_view_crud, methods=['GET', 'PUT', 'DELETE'])
-
 access_films_view = AccessFilms.as_view('access_films')
 app.add_url_rule('/profile/<int:profile_id>/access_films/<int:film_id>', view_func=access_films_view, methods=['GET',])
 
 access_series_view = AccessSeries.as_view('access_series')
 app.add_url_rule('/profile/<int:profile_id>/access_series/<int:series_id>', view_func=access_series_view, methods=['GET',])
-
-watchlist_view_get = Watchlist.as_view('watchlist_get')
-watchlist_view_post = Watchlist.as_view('watchlist_post')
-watchlist_view_crud = Watchlist.as_view('watchlist_crud')
-
-app.add_url_rule('/watchlist/', defaults={'id': None}, view_func=watchlist_view_get, methods=['GET',])
-app.add_url_rule('/watchlist/', view_func=watchlist_view_post, methods=['POST',])
-app.add_url_rule('/watchlist/<int:id>', view_func=watchlist_view_crud, methods=['GET', 'PUT', 'DELETE'])
 
 # Report
 views_report_films_names = FilmNames.as_view('views_report_films_names')
@@ -205,25 +180,13 @@ with app.test_request_context():
     spec.path(view=series_view_crud)
 
     # Profile
-    spec.path(view=history_view_get)
-    spec.path(view=history_view_post)
-    spec.path(view=history_view_crud)
-
     spec.path(view=interests_view_get)
     spec.path(view=interests_view_post)
     spec.path(view=interests_view_crud)
 
-    spec.path(view=preferences_view_get)
-    spec.path(view=preferences_view_post)
-    spec.path(view=preferences_view_crud)
-
     spec.path(view=access_films_view)
 
     spec.path(view=access_series_view)
-
-    spec.path(view=watchlist_view_get)
-    spec.path(view=watchlist_view_post)
-    spec.path(view=watchlist_view_crud)
 
     # Report
     spec.path(view=views_report_films_names)

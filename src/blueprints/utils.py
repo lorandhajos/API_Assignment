@@ -8,10 +8,11 @@ from dicttoxml import dicttoxml
 from flask import jsonify
 from sqlalchemy import create_engine
 
-key = b64decode(os.environ.get('SECRET_KEY'))
+if os.environ.get('SECRET_KEY'):
+    key = b64decode(os.environ.get('SECRET_KEY'))
 
 def get_db_engine(data):
-    host = 'localhost' if os.environ.get('FLASK_ENV') == 'development' else 'db'
+    host = 'db'
 
     user = data.split(':')[0]
     password = data.split(':')[1]
@@ -20,8 +21,13 @@ def get_db_engine(data):
     if not re.match(r'^[a-zA-Z0-9_]+$', user) or not re.match(r'^[a-zA-Z0-9_]+$', password):
         raise ValueError("Invalid username or password")
 
-    return create_engine(f"postgresql+psycopg://{user}:{password}@{host}:5432/{db_name}",
+    engine = create_engine(f"postgresql+psycopg://{user}:{password}@{host}:5432/{db_name}",
                          echo=True, pool_size=20, max_overflow=0)
+
+    if os.environ.get('FLASK_ENV') != 'development':
+        engine.execution_options("postgresql_readonly", True)
+
+    return engine
 
 def generate_response(data, request, code=200):
     if request.headers.get('accept') == 'application/json':
@@ -46,3 +52,9 @@ def decrypt(data):
     cipher = ChaCha20.new(key=key, nonce=nonce)
 
     return cipher.decrypt(ciphertext).decode('utf-8')
+
+def check_env_vars(vars_list):
+    for var in vars_list:
+        if os.getenv(var) is None:
+            return False
+    return True
