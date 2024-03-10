@@ -249,31 +249,31 @@ INSERT INTO "watchlist_series" ("watchlist_series_id", "watchlist_id", "series_i
 (1,	2,	1),
 (2,	3,	1);
 
-ALTER TABLE ONLY "public"."account" ADD CONSTRAINT "fk_subscription" FOREIGN KEY (subscription_id) REFERENCES subscription(subscription_id) NOT DEFERRABLE;
+ALTER TABLE ONLY "public"."account" ADD CONSTRAINT "fk_subscription" FOREIGN KEY (subscription_id) REFERENCES subscription(subscription_id) ON UPDATE CASCADE ON DELETE CASCADE NOT DEFERRABLE;
 
 ALTER TABLE ONLY "public"."episode" ADD CONSTRAINT "fk_series" FOREIGN KEY (series_id) REFERENCES series(series_id) NOT DEFERRABLE;
 
-ALTER TABLE ONLY "public"."history_movies" ADD CONSTRAINT "history_movies_history_id_fkey" FOREIGN KEY (history_id) REFERENCES profile(history_id) ON UPDATE CASCADE NOT DEFERRABLE;
-ALTER TABLE ONLY "public"."history_movies" ADD CONSTRAINT "history_movies_movie_id_fkey" FOREIGN KEY (movie_id) REFERENCES movie(movie_id) ON UPDATE CASCADE NOT DEFERRABLE;
+ALTER TABLE ONLY "public"."history_movies" ADD CONSTRAINT "history_movies_history_id_fkey" FOREIGN KEY (history_id) REFERENCES profile(history_id) ON UPDATE CASCADE ON DELETE CASCADE NOT DEFERRABLE;
+ALTER TABLE ONLY "public"."history_movies" ADD CONSTRAINT "history_movies_movie_id_fkey" FOREIGN KEY (movie_id) REFERENCES movie(movie_id) ON UPDATE CASCADE ON DELETE CASCADE NOT DEFERRABLE;
 
-ALTER TABLE ONLY "public"."history_series" ADD CONSTRAINT "fk_history" FOREIGN KEY (history_id) REFERENCES profile(history_id) NOT DEFERRABLE;
-ALTER TABLE ONLY "public"."history_series" ADD CONSTRAINT "fk_series" FOREIGN KEY (series_id) REFERENCES series(series_id) NOT DEFERRABLE;
+ALTER TABLE ONLY "public"."history_series" ADD CONSTRAINT "fk_history" FOREIGN KEY (history_id) REFERENCES profile(history_id) ON UPDATE CASCADE ON DELETE CASCADE NOT DEFERRABLE;
+ALTER TABLE ONLY "public"."history_series" ADD CONSTRAINT "fk_series" FOREIGN KEY (series_id) REFERENCES series(series_id) ON UPDATE CASCADE ON DELETE CASCADE NOT DEFERRABLE;
 
-ALTER TABLE ONLY "public"."interests" ADD CONSTRAINT "fk_genre" FOREIGN KEY (genre_id) REFERENCES genre(genre_id) NOT DEFERRABLE;
-ALTER TABLE ONLY "public"."interests" ADD CONSTRAINT "fk_profile" FOREIGN KEY (profile_id) REFERENCES profile(profile_id) NOT DEFERRABLE;
+ALTER TABLE ONLY "public"."interests" ADD CONSTRAINT "fk_genre" FOREIGN KEY (genre_id) REFERENCES genre(genre_id) ON UPDATE CASCADE ON DELETE CASCADE NOT DEFERRABLE;
+ALTER TABLE ONLY "public"."interests" ADD CONSTRAINT "fk_profile" FOREIGN KEY (profile_id) REFERENCES profile(profile_id) ON UPDATE CASCADE ON DELETE CASCADE NOT DEFERRABLE;
 
-ALTER TABLE ONLY "public"."movie_genre" ADD CONSTRAINT "fk_genre" FOREIGN KEY (genre_id) REFERENCES genre(genre_id) NOT DEFERRABLE;
-ALTER TABLE ONLY "public"."movie_genre" ADD CONSTRAINT "fk_movie" FOREIGN KEY (movie_id) REFERENCES movie(movie_id) NOT DEFERRABLE;
+ALTER TABLE ONLY "public"."movie_genre" ADD CONSTRAINT "fk_genre" FOREIGN KEY (genre_id) REFERENCES genre(genre_id) ON UPDATE CASCADE ON DELETE CASCADE NOT DEFERRABLE;
+ALTER TABLE ONLY "public"."movie_genre" ADD CONSTRAINT "fk_movie" FOREIGN KEY (movie_id) REFERENCES movie(movie_id) ON UPDATE CASCADE ON DELETE CASCADE NOT DEFERRABLE;
 
-ALTER TABLE ONLY "public"."profile" ADD CONSTRAINT "fk_watchlist" FOREIGN KEY (watchlist_id) REFERENCES profile(watchlist_id) NOT DEFERRABLE;
+ALTER TABLE ONLY "public"."profile" ADD CONSTRAINT "fk_watchlist" FOREIGN KEY (watchlist_id) REFERENCES profile(watchlist_id) ON UPDATE CASCADE ON DELETE CASCADE NOT DEFERRABLE;
 
-ALTER TABLE ONLY "public"."series_genre" ADD CONSTRAINT "fk_genre" FOREIGN KEY (genre_id) REFERENCES genre(genre_id) NOT DEFERRABLE;
-ALTER TABLE ONLY "public"."series_genre" ADD CONSTRAINT "fk_movie" FOREIGN KEY (series_id) REFERENCES series(series_id) NOT DEFERRABLE;
+ALTER TABLE ONLY "public"."series_genre" ADD CONSTRAINT "fk_genre" FOREIGN KEY (genre_id) REFERENCES genre(genre_id) ON UPDATE CASCADE ON DELETE CASCADE NOT DEFERRABLE;
+ALTER TABLE ONLY "public"."series_genre" ADD CONSTRAINT "fk_movie" FOREIGN KEY (series_id) REFERENCES series(series_id ON UPDATE CASCADE ON DELETE CASCADE) NOT DEFERRABLE;
 
-ALTER TABLE ONLY "public"."watchlist_movies" ADD CONSTRAINT "fk_movie" FOREIGN KEY (movie_id) REFERENCES movie(movie_id) NOT DEFERRABLE;
-ALTER TABLE ONLY "public"."watchlist_movies" ADD CONSTRAINT "fk_watchlist" FOREIGN KEY (watchlist_id) REFERENCES profile(watchlist_id) NOT DEFERRABLE;
+ALTER TABLE ONLY "public"."watchlist_movies" ADD CONSTRAINT "fk_movie" FOREIGN KEY (movie_id) REFERENCES movie(movie_id) ON UPDATE CASCADE ON DELETE CASCADE NOT DEFERRABLE;
+ALTER TABLE ONLY "public"."watchlist_movies" ADD CONSTRAINT "fk_watchlist" FOREIGN KEY (watchlist_id) REFERENCES profile(watchlist_id) ON UPDATE CASCADE ON DELETE CASCADE NOT DEFERRABLE;
 
-ALTER TABLE ONLY "public"."watchlist_series" ADD CONSTRAINT "fk_series" FOREIGN KEY (series_id) REFERENCES series(series_id) NOT DEFERRABLE;
-ALTER TABLE ONLY "public"."watchlist_series" ADD CONSTRAINT "fk_watchlist" FOREIGN KEY (watchlist_id) REFERENCES profile(watchlist_id) NOT DEFERRABLE;
+ALTER TABLE ONLY "public"."watchlist_series" ADD CONSTRAINT "fk_series" FOREIGN KEY (series_id) REFERENCES series(series_id) ON UPDATE CASCADE ON DELETE CASCADE NOT DEFERRABLE;
+ALTER TABLE ONLY "public"."watchlist_series" ADD CONSTRAINT "fk_watchlist" FOREIGN KEY (watchlist_id) REFERENCES profile(watchlist_id) ON UPDATE CASCADE ON DELETE CASCADE NOT DEFERRABLE;
 
-ALTER TABLE ONLY "public"."account" ADD CONSTRAINT "fk_account" FOREIGN KEY (profile_id) REFERENCES profile(profile_id) NOT DEFERRABLE;
+ALTER TABLE ONLY "public"."account" ADD CONSTRAINT "fk_account" FOREIGN KEY (profile_id) REFERENCES profile(profile_id) ON UPDATE CASCADE ON DELETE CASCADE NOT DEFERRABLE;
