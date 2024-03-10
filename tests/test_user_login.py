@@ -6,7 +6,7 @@ class TestLogin(unittest.TestCase):
     def test_correct_login(self):
         mock_data = {
             "email": "test.eamil@tetst.com",
-            "password": "7c4a8d09ca3762af61e59520943dc26494f8941b"
+            "password": "123"
         }
 
         result = requests.post('http://localhost/api/v1/user_login',

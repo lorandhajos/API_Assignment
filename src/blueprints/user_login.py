@@ -56,11 +56,13 @@ class UserLogin(MethodView):
 
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                # TODO: update permissions for login
-                user_id = connection.execute(text("SELECT * FROM login(:email, :password);"),
+                data = connection.execute(text("SELECT account_id, password FROM selectLogin WHERE email = :email;"),
                                              {"email": email, "password": password}).first()
 
-            result = encrypt(f"{data}:{user_id[0]}")
+            if not bcrypt.checkpw(password.encode('utf-8'), data[1].encode('utf-8')):
+                return generate_response({"msg": "Bad username or password"}, request, 401)
+
+            result = encrypt(f"{data}:{data[0]}")
         except Exception as e:
             print(e)
             return generate_response({"msg": "Bad username or password"}, request, 401)
