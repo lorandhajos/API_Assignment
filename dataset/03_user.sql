@@ -130,11 +130,11 @@ REVOKE ALL PRIVILEGES ON PROCEDURE updateAccountElement(p_account_id integer, p_
 
 REVOKE ALL PRIVILEGES ON PROCEDURE deleteAccountElement(p_account_id integer) FROM api_user;
 
-REVOKE ALL PRIVILEGES ON PROCEDURE createGenreElement(p_genre_id integer, p_name VARCHAR, p_age_restriction integer);
+REVOKE ALL PRIVILEGES ON PROCEDURE createGenreElement(p_genre_id integer, p_name VARCHAR, p_age_restriction integer) FROM api_user;
 
-REVOKE ALL PRIVILEGES ON PROCEDURE updateGenreElement(p_genre_id integer, p_name VARCHAR, p_age_restriction integer);
+REVOKE ALL PRIVILEGES ON PROCEDURE updateGenreElement(p_genre_id integer, p_name VARCHAR, p_age_restriction integer) FROM api_user;
 
-REVOKE ALL PRIVILEGES ON PROCEDURE deleteGenreElement(p_genre_id integer);
+REVOKE ALL PRIVILEGES ON PROCEDURE deleteGenreElement(p_genre_id integer) FROM api_user;
 
 CREATE USER authorisedDBUser ENCRYPTED PASSWORD 'yn5j1masd!';
 
