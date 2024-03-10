@@ -274,5 +274,3 @@ ALTER TABLE ONLY "public"."watchlist_movies" ADD CONSTRAINT "fk_watchlist" FOREI
 
 ALTER TABLE ONLY "public"."watchlist_series" ADD CONSTRAINT "fk_series" FOREIGN KEY (series_id) REFERENCES series(series_id) ON UPDATE CASCADE ON DELETE CASCADE NOT DEFERRABLE;
 ALTER TABLE ONLY "public"."watchlist_series" ADD CONSTRAINT "fk_watchlist" FOREIGN KEY (watchlist_id) REFERENCES profile(watchlist_id) ON UPDATE CASCADE ON DELETE CASCADE NOT DEFERRABLE;
-
-ALTER TABLE ONLY "public"."account" ADD CONSTRAINT "fk_account" FOREIGN KEY (profile_id) REFERENCES profile(profile_id) ON UPDATE CASCADE ON DELETE CASCADE NOT DEFERRABLE;
