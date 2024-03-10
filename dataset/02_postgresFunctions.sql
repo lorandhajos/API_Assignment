@@ -727,8 +727,8 @@ CREATE OR REPLACE PROCEDURE createProfileElement(
 LANGUAGE plpgsql
 AS $$
 BEGIN
-  INSERT INTO profile (profile_id, profile_image, profile_child, age, language, watchlist_id, history_id, country, is_trial, is_discount)
-  VALUES (p_profile_id, p_profile_image, p_profile_child, p_age,  p_language, p_watchlist_id, p_history_id, p_country, p_is_discount, p_is_discount);
+  INSERT INTO profile (profile_id, account_id, profile_image, profile_child, age, language, watchlist_id, history_id, country, is_trial, is_discount)
+  VALUES (p_profile_id, p_account_id, p_profile_image, p_profile_child, p_age,  p_language, p_watchlist_id, p_history_id, p_country, p_is_discount, p_is_discount);
 END;
 $$;
 
@@ -747,8 +747,8 @@ CREATE OR REPLACE PROCEDURE createProfileElement(
 LANGUAGE plpgsql
 AS $$
 BEGIN
-  INSERT INTO profile (profile_image, profile_child, age, language, watchlist_id, history_id, country, is_trial, is_discount)
-  VALUES (p_profile_image, p_profile_child, p_age,  p_language, p_watchlist_id, p_history_id, p_country, p_is_discount, p_is_discount);
+  INSERT INTO profile (account_id, profile_image, profile_child, age, language, watchlist_id, history_id, country, is_trial, is_discount)
+  VALUES (p_account_id, p_profile_image, p_profile_child, p_age,  p_language, p_watchlist_id, p_history_id, p_country, p_is_discount, p_is_discount);
 END;
 $$;
 

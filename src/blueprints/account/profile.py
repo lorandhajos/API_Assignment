@@ -72,12 +72,21 @@ class Profile(MethodView):
 
         try:
             name = request.json.get('name')
-            name = request.json.get('account_id')
+            account_id = request.json.get('account_id')
+            profile_image = request.json.get('profile_image')
+            profile_child = request.json.get('profile_child')
+            age = request.json.get('age')
+            language = request.json.get('language')
+            history_id = request.json.get('history_id')
+            watchlist_id = request.json.get('watchlist_id')
+            country = request.json.get('country')
+            is_trial = request.json.get('is_trial')
+            is_discount = request.json.get('is_discount')
 
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                connection.execute(text(f"SELECT createProfile(:name, :account_id);"),
-                                            {"name": name, "account_id": account_id})
+                connection.execute(text(f"SELECT createProfileElement(:account_id, :profile_image, :profile_child, :age, :language, :watchlist_id :history_id, :country, :is_trial, :is_discount);"),
+                                            {"account_id": account_id, "profile_image": profile_image, "profile_child": profile_child, "age": age, "language": language, "watchlist_id": watchlist_id, "history_id":history_id, "country": country, "is_trial": is_trial, "is_discount": is_discount})
                 connection.commit()
         except Exception as e:
             print(e)
@@ -127,10 +136,9 @@ class Profile(MethodView):
             engine = get_db_engine(data)
             with engine.connect() as connection:
                 if id is None:
-                    result = connection.execute(text(f"SELECT getProfilesForID(:account_id);"),
-                                            {"account_id": id}).fetchall()
+                    result = connection.execute(text(f"SELECT selectProfile;")).fetchall()
                 else:
-                    result = connection.execute(text(f"SELECT getProfilesForID(:account_id);"),
+                    result = connection.execute(text(f"SELECT selectProfile WHERE account_id = :account_id;"),
                                             {"account_id": id}).first()
         except Exception as e:
             print(e)
@@ -193,11 +201,19 @@ class Profile(MethodView):
 
         try:
             name = request.json.get('name')
+            account_id = request.json.get('account_id')
+            profile_image = request.json.get('profile_image')
+            profile_child = request.json.get('profile_child')
+            age = request.json.get('age')
+            language = request.json.get('language')
+            country = request.json.get('country')
+            is_trial = request.json.get('is_trial')
+            is_discount = request.json.get('is_discount')
 
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                connection.execute(text(f"SELECT updateProfile(:name, :profile_id);"),
-                                            {"name": name, "profile_id": profile_id})
+                connection.execute(text(f"SELECT updateProfileElement(:profile_id, :account_id, :profile_image, :profile_child, :profile_child, :age, :language, :country, :is_trial, :is_discount);"),
+                                            {"profile_id": profile_id, "account_id": account_id, "profile_image": profile_image, "profile_child": profile_child, "age": age, "language": language, "country": country, "is_trial": is_trial, "is_discount": is_discount})
                 connection.commit()
         except Exception as e:
             print(e)
@@ -253,7 +269,7 @@ class Profile(MethodView):
         try:
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                connection.execute(text(f"SELECT deleteProfile(:profile_id);"),
+                connection.execute(text(f"SELECT deleteProfileElement(:profile_id);"),
                                             {"profile_id": profile_id})
                 connection.commit()
         except Exception as e:
