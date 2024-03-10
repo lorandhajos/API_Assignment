@@ -1,3 +1,4 @@
+from datetime import timedelta
 import json
 
 from flask import request
@@ -60,16 +61,14 @@ class Movies(MethodView):
             return generate_response({"msg": "Bad username or password"}, request, 401)
 
         try:
-            # TODO: get rid of id
-            # TODO: fix problem with types?
-            movie_id = request.json.get('id')
             title = request.json.get('title')
             duration = request.json.get('duration')
+            duration = timedelta(seconds=duration)
 
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                connection.execute(text("CALL createMovieElement(:id, :title, :duration, :views);"),
-                                        {"id": movie_id, "title": title, "duration": duration, "views": 0})
+                connection.execute(text("CALL createMovieElement(:title, :duration, :views);"),
+                                        {"title": title, "duration": duration, "views": 0})
         except Exception as e:
             print(e)
             return generate_response({"msg": "Bad request"}, request, 400)
@@ -181,15 +180,14 @@ class Movies(MethodView):
             return generate_response({"msg": "Bad username or password"}, request, 401)
 
         try:
-            # TODO: fix problem with types?
-            movie_id = request.json.get('id')
             title = request.json.get('title')
             duration = request.json.get('duration')
+            duration = timedelta(seconds=duration)
 
             engine = get_db_engine(data)
             with engine.connect() as connection:
                 connection.execute(text("CALL updateMovieElement(:id, :title, :duration, :views);"),
-                                        {"id": movie_id, "title": title, "duration": duration, "views": 0})
+                                        {"id": id, "title": title, "duration": duration, "views": 0})
         except Exception as e:
             print(e)
             return generate_response({"msg": "Bad request"}, request, 400)

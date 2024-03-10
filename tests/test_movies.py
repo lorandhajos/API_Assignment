@@ -35,9 +35,8 @@ class TestMovies(unittest.TestCase):
             'Authorization': f'Bearer {self.token}'
         }
         data = {
-            "id": 1,
-            "tile": "example",
-            "duration": 1
+            "title": "example",
+            "duration": 5400
         }
         result = requests.post('http://localhost/api/v1/movies', headers=headers, json=data)
 
@@ -49,9 +48,8 @@ class TestMovies(unittest.TestCase):
             'Authorization': f'Bearer {self.token}'
         }
         data = {
-            "id": 1,
             "title": "example",
-            "duration": 1
+            "duration": 5400
         }
         result = requests.put('http://localhost/api/v1/movies/1', headers=headers, json=data)
 
