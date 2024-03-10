@@ -102,7 +102,7 @@ REVOKE ALL PRIVILEGES ON PROCEDURE deleteSeriesGenreElement(p_genre_id integer, 
 
 REVOKE ALL PRIVILEGES ON PROCEDURE createSubscriptionElement(p_subscription_id integer, p_description VARCHAR, p_price real) FROM api_user;
 
-REVOKE ALL PRIVILEGES ON PROCEDURE updateUbscriptionElement(p_subscription_id integer, p_description VARCHAR, p_price real) FROM api_user;
+REVOKE ALL PRIVILEGES ON PROCEDURE updateSubscriptionElement(p_subscription_id integer, p_description VARCHAR, p_price real) FROM api_user;
 
 REVOKE ALL PRIVILEGES ON PROCEDURE deleteSubscriptionElement(p_subscription_id integer) FROM api_user;
 
@@ -175,3 +175,33 @@ CREATE ROLE senior;
 /*senior gets to keep the default acces rights*/
 
 GRANT senior TO authorisedDBUser WITH INHERIT TRUE;
+
+/*Grants for the views*/
+
+GRANT SELECT ON selectLogin TO api_user;
+
+GRANT SELECT ON selectWatchlistMovies TO api_user;
+
+GRANT SELECT ON selectWatchlistSeries TO api_user;
+
+GRANT SELECT ON selectHistoryMovies TO api_user;
+
+GRANT SELECT ON selectHistorySeries TO api_user;
+
+GRANT SELECT ON selectInterests TO api_user;
+
+GRANT SELECT ON selectGenre TO api_user;
+
+GRANT SELECT ON selectMoviesGenre TO api_user;
+
+GRANT SELECT ON selectseriesGenre TO api_user;
+
+GRANT SELECT ON selectSubscription TO api_user;
+
+GRANT SELECT ON selectMovie TO api_user;
+
+GRANT SELECT ON selectSeries TO api_user;
+
+GRANT SELECT ON selectProfile TO api_user;
+
+GRANT SELECT ON selectAccount TO api_user;
