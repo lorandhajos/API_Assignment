@@ -124,9 +124,9 @@ REVOKE ALL PRIVILEGES ON PROCEDURE updateProfileElement(p_profile_id integer, p_
 
 REVOKE ALL PRIVILEGES ON PROCEDURE deleteProfileElement(p_profile_id integer) FROM api_user;
 
-REVOKE ALL PRIVILEGES ON PROCEDURE createAccountElement(p_account_id integer, p_profile_id integer, p_email VARCHAR, p_password VARCHAR, p_payment_method VARCHAR, p_blocked boolean, p_login_attempts integer, p_last_login date, p_subscription_id integer) FROM api_user;
+REVOKE ALL PRIVILEGES ON PROCEDURE createAccountElement(p_account_id integer, p_email VARCHAR, p_password VARCHAR, p_payment_method VARCHAR, p_blocked boolean, p_login_attempts integer, p_last_login date, p_subscription_id integer) FROM api_user;
 
-REVOKE ALL PRIVILEGES ON PROCEDURE updateAccountElement(p_account_id integer, p_profile_id integer, p_email VARCHAR, p_password VARCHAR, p_payment_method VARCHAR, p_blocked boolean, p_login_attempts integer, p_last_login date, p_subscription_id integer) FROM api_user;
+REVOKE ALL PRIVILEGES ON PROCEDURE updateAccountElement(p_account_id integer, p_email VARCHAR, p_password VARCHAR, p_payment_method VARCHAR, p_blocked boolean, p_login_attempts integer, p_last_login date, p_subscription_id integer) FROM api_user;
 
 REVOKE ALL PRIVILEGES ON PROCEDURE deleteAccountElement(p_account_id integer) FROM api_user;
 
