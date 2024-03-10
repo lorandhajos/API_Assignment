@@ -858,7 +858,7 @@ $$;
 CREATE OR REPLACE FUNCTION check_profile_limit()
 RETURNS TRIGGER AS $$
 BEGIN
-    IF (SELECT COUNT(*) FROM account WHERE profile_id = NEW.profile_id) >= 4 THEN
+    IF (SELECT COUNT(*) FROM profile WHERE profile_id = NEW.profile_id) >= 4 THEN
         RAISE EXCEPTION 'Maximum limit of profiles (4) reached for this account';
     END IF;
     RETURN NEW;
