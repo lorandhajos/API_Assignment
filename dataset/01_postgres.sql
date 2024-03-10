@@ -18,9 +18,9 @@ CREATE TABLE "public"."account" (
 ) WITH (oids = false);
 
 INSERT INTO "account" ("account_id", "email", "password", "payment_method", "blocked", "login_attempts", "last_login", "subscription_id") VALUES
-(2, 'test.eamil@tetst.com',	'7c4a8d09ca3762af61e59520943dc26494f8941b',	'MasterCard',	'f',	0,	'2023-12-11',	2),
-(3,	'email@test.com',	'20eabe5d64b0e216796e834f52d61fd0b70332fc',	'iDeal',	'f',	0,	'2023-12-11',	3),
-(1,	'email.email@test.com',	'8cb2237d0679ca88db6464eac60da96345513964',	'Visa',	'f',	0,	'2023-12-11',	1);
+(2, 'test.eamil@tetst.com',	'$2b$14$lmttVIPdcEZuiqRCN8/5WewkZ8JAaOLz6xnCtuQWh7rz6ZD/2oZIC',	'MasterCard',	'f',	0,	'2023-12-11',	2),
+(3,	'email@test.com',	'$2b$14$lmttVIPdcEZuiqRCN8/5WewkZ8JAaOLz6xnCtuQWh7rz6ZD/2oZIC',	'iDeal',	'f',	0,	'2023-12-11',	3),
+(1,	'email.email@test.com',	'$2b$14$lmttVIPdcEZuiqRCN8/5WewkZ8JAaOLz6xnCtuQWh7rz6ZD/2oZIC',	'Visa',	'f',	0,	'2023-12-11',	1);
 
 DROP TABLE IF EXISTS "episode";
 DROP SEQUENCE IF EXISTS episode_episode_id_seq;
