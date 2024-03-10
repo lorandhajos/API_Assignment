@@ -72,15 +72,18 @@ class Profile(MethodView):
 
         try:
             name = request.json.get('name')
+            name = request.json.get('account_id')
 
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                result = connection.execute(text(f"SELECT createProfile(:name, :account_id);"),
-                                            {"name": name, "account_id": data["account_id"]}).first()
-        except Exception:
+                connection.execute(text(f"SELECT createProfile(:name, :account_id);"),
+                                            {"name": name, "account_id": account_id})
+                connection.commit()
+        except Exception as e:
+            print(e)
             return generate_response({"msg": "Bad request"}, request, 400)
 
-        return generate_response(result, request, 201)
+        return generate_response({"msg": "Operation successful"}, request, 201)
 
     @jwt_required(optional=False)
     def get(self, id=None):
@@ -123,10 +126,19 @@ class Profile(MethodView):
         try:
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                result = connection.execute(text(f"SELECT getProfilesForID(:account_id);"),
-                                            {"account_id": data["account_id"]}).all()
-        except Exception:
+                if id is None:
+                    result = connection.execute(text(f"SELECT getProfilesForID(:account_id);"),
+                                            {"account_id": id}).fetchall()
+                else:
+                    result = connection.execute(text(f"SELECT getProfilesForID(:account_id);"),
+                                            {"account_id": id}).first()
+        except Exception as e:
+            print(e)
             return generate_response({"msg": "Bad request"}, request, 400)
+
+        many = isinstance(result, list)
+        schema = SeriesResponseSchema()
+        result = schema.dump(result, many=many)
 
         return generate_response(result, request)
 
@@ -184,12 +196,14 @@ class Profile(MethodView):
 
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                result = connection.execute(text(f"SELECT updateProfile(:name, :profile_id);"),
-                                            {"name": name, "profile_id": profile_id}).first()
-        except Exception:
+                connection.execute(text(f"SELECT updateProfile(:name, :profile_id);"),
+                                            {"name": name, "profile_id": profile_id})
+                connection.commit()
+        except Exception as e:
+            print(e)
             return generate_response({"msg": "Bad request"}, request, 400)
 
-        return generate_response(result, request)
+        return generate_response({"msg": "Operation successful"}, request)
 
     @jwt_required(optional=False)
     def delete(self, profile_id):
@@ -239,9 +253,11 @@ class Profile(MethodView):
         try:
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                result = connection.execute(text(f"SELECT deleteProfile(:profile_id);"),
-                                            {"profile_id": profile_id}).first()
-        except Exception:
+                connection.execute(text(f"SELECT deleteProfile(:profile_id);"),
+                                            {"profile_id": profile_id})
+                connection.commit()
+        except Exception as e:
+            print(e)
             return generate_response({"msg": "Bad request"}, request, 400)
 
-        return generate_response(result, request)
+        return generate_response({"msg": "Operation successful"}, request)
