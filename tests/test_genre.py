@@ -25,7 +25,7 @@ class TestGenre(unittest.TestCase):
             'Accept': 'application/json',
             'Authorization': f'Bearer {self.token}'
         }
-        result = requests.get('http://localhost/api/v1/genre/1/', headers=headers)
+        result = requests.get('http://localhost/api/v1/genre/1', headers=headers)
 
         self.assertEqual(result.status_code, 200)
 
@@ -35,9 +35,8 @@ class TestGenre(unittest.TestCase):
             'Authorization': f'Bearer {self.token}'
         }
         data = {
-            "age_restriction": 18,
-            "genre_id": 1,
-            "name": "example"
+            "name": "example",
+            "age_restriction": 18
         }
         result = requests.post('http://localhost/api/v1/genre', headers=headers, json=data)
 
@@ -49,11 +48,11 @@ class TestGenre(unittest.TestCase):
             'Authorization': f'Bearer {self.token}'
         }
         data = {
-            "age_restriction": 18,
             "genre_id": 1,
-            "name": "example"
+            "name": "example",
+            "age_restriction": 18
         }
-        result = requests.put('http://localhost/api/v1/genre/1/', headers=headers, json=data)
+        result = requests.put('http://localhost/api/v1/genre/10', headers=headers, json=data)
 
         self.assertEqual(result.status_code, 200)
 
@@ -62,6 +61,6 @@ class TestGenre(unittest.TestCase):
             'Accept': 'application/json',
             'Authorization': f'Bearer {self.token}'
         }
-        result = requests.delete('http://localhost/api/v1/genre', headers=headers)
+        result = requests.delete('http://localhost/api/v1/genre/10', headers=headers)
 
         self.assertEqual(result.status_code, 200)

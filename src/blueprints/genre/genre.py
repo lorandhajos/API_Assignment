@@ -61,17 +61,16 @@ class Genre(MethodView):
             return generate_response({"msg": "Bad username or password"}, request, 401)
 
         try:
-            genre_id = request.json.get('genre_id')
-            name = request.json.get('name')
-            age_restriction = request.json.get('age_restriction')
-
+            genre_info = request.json
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                result = connection.execute(text("CALL createGenreElement(:genre_id, :name, :age_restriction);"), {"genre_id": genre_id, "name": name, "age_restriction": age_restriction})
-        except Exception:
+                connection.execute(text("CALL createGenreElement(:name, :age_restriction);"), genre_info)
+                connection.commit()
+        except Exception as e:
+            print(e)
             return generate_response({"msg": "Bad request"}, request, 400)
 
-        return generate_response(result, 201)
+        return generate_response({"msg": "Operation successful"}, request)
 
     @jwt_required(optional=False)
     def get(self, id=None):
@@ -110,21 +109,26 @@ class Genre(MethodView):
             data = decrypt(json.loads(get_jwt_identity()))
         except Exception:
             return generate_response({"msg": "Bad username or password"}, request, 401)
-        try:
 
+        try:
             engine = get_db_engine(data)
             with engine.connect() as connection:
                 if id is None:
                     result = connection.execute(text("SELECT * FROM selectGenre;")).fetchall()
                 else:
                     result = connection.execute(text("SELECT * FROM selectGenre WHERE genre_id = :id;"), {"id": id}).first()
-        except Exception:
+        except Exception as e:
+            print(e)
             return generate_response({"msg": "Bad request"}, request, 400)
 
-        return generate_response(result, 201)
+        many = isinstance(result, list)
+        schema = GenreSchema()
+        result = schema.dump(result, many=many)
+
+        return generate_response(result, request)
 
     @jwt_required(optional=False)
-    def put(self):
+    def put(self, id):
         """
         Update genre
         ---
@@ -165,17 +169,19 @@ class Genre(MethodView):
             return generate_response({"msg": "Bad username or password"}, request, 401)
 
         try:
-            genre_id = request.json.get('genre_id')
-            name = request.json.get('name')
-            age_restriction = request.json.get('age_restriction')
+            name = request.json.get("name")
+            age_restriction = request.json.get("age_restriction")
 
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                result = connection.execute(text("CALL updateGenreElement(:genre_id, :name, :age_restriction);"), {"genre_id": genre_id, "name": name, "age_restriction": age_restriction}).first()
-        except Exception:
+                connection.execute(text("CALL updateGenreElement(:genre_id, :name, :age_restriction);"),
+                                   {"genre_id": id, "name": name, "age_restriction": age_restriction})
+                connection.commit()
+        except Exception as e:
+            print(e)
             return generate_response({"msg": "Bad request"}, request, 400)
 
-        return generate_response(result, 201)
+        return generate_response({"msg": "Operation successful"}, request)
 
     @jwt_required(optional=False)
     def delete(self, id):
@@ -217,8 +223,10 @@ class Genre(MethodView):
         try:
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                result = connection.execute(text("CALL deleteGenreElement(:id);"), {"id": id}).first()
-        except Exception:
+                connection.execute(text("CALL deleteGenreElement(:id);"), {"id": id})
+                connection.commit()
+        except Exception as e:
+            print(e)
             return generate_response({"msg": "Bad request"}, request, 400)
 
-        return generate_response(result, 201)
+        return generate_response({"msg": "Operation successful"}, request)
