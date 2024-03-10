@@ -14,8 +14,9 @@ class SeriesSchema(Schema):
     views = fields.Integer(required=True)
 
 class SeriesResponseSchema(Schema):
-    title = fields.String(required=True)
     series_id = fields.Integer(required=True)
+    title = fields.String(required=True)
+    views = fields.Integer(required=True)
 
 class Series(MethodView):
     @jwt_required(optional=False)
@@ -37,9 +38,9 @@ class Series(MethodView):
                 description: Series created
                 content:
                     application/json:
-                        schema: SeriesResponseSchema
+                        schema: ErrorResponseSchema
                     application/xml:
-                        schema: SeriesResponseSchema
+                        schema: ErrorResponseSchema
             400:
                 description: Bad request
                 content:
@@ -60,17 +61,20 @@ class Series(MethodView):
             return generate_response({"msg": "Bad username or password"}, request, 401)
 
         try:
-            series_id = request.json.get('series_id')
+            series_id = request.json.get('id')
             title = request.json.get('title')
             views = request.json.get('views')
 
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                result = connection.execute(text("CALL createSeriesElement(:series_id, :title, :views);"), {"id":id, "title":title, "views":views}).first()
-        except Exception:
+                connection.execute(text("CALL createSeriesElement(:series_id, :title, :views);"),
+                                            {"series_id": series_id, "title": title, "views": views})
+                connection.commit()
+        except Exception as e:
+            print(e)
             return generate_response({"msg": "Bad request"}, request, 400)
 
-        return generate_response(result, request, 201)
+        return generate_response({"msg": "Operation successful"}, request, 201)
 
     @jwt_required(optional=False)
     def get(self, id=None):
@@ -82,6 +86,12 @@ class Series(MethodView):
         description: Get series
         security:
             - JWT: []
+        parameters:
+            - in: path
+              name: id
+              schema:
+                type: integer
+              description: The series id
         responses:
             200:
                 description: Series
@@ -116,9 +126,15 @@ class Series(MethodView):
                 if id is None:
                     result = connection.execute(text("SELECT * FROM selectSeries;")).fetchall()
                 else:
-                    result = connection.execute(text("SELECT * FROM selectSeries WHERE series_id = :id;"), {"id": id}).first()
-        except Exception:
+                    result = connection.execute(text("SELECT * FROM selectSeries WHERE series_id = :id;"),
+                                                {"id": id}).first()
+        except Exception as e:
+            print(e)
             return generate_response({"msg": "Bad request"}, request, 400)
+
+        many = isinstance(result, list)
+        schema = SeriesResponseSchema()
+        result = schema.dump(result, many=many)
 
         return generate_response(result, request)
 
@@ -141,9 +157,9 @@ class Series(MethodView):
                 description: Series updated
                 content:
                     application/json:
-                        schema: SeriesResponseSchema
+                        schema: ErrorResponseSchema
                     application/xml:
-                        schema: SeriesResponseSchema
+                        schema: ErrorResponseSchema
             400:
                 description: Bad request
                 content:
@@ -170,11 +186,14 @@ class Series(MethodView):
 
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                result = connection.execute(text("CALL updateSeriesElement(:series_id, :title, :views);"), {"id":id, "title":title, "views":views}).first()
-        except Exception:
+                connection.execute(text("CALL updateSeriesElement(:series_id, :title, :views);"),
+                                            {"series_id": id, "title": title, "views": views})
+                connection.commit()
+        except Exception as e:
+            print(e)
             return generate_response({"msg": "Bad request"}, request, 400)
 
-        return generate_response(result, request)
+        return generate_response({"msg": "Operation successful"}, request)
 
     @jwt_required(optional=False)
     def delete(self, id):
@@ -191,9 +210,9 @@ class Series(MethodView):
                 description: Series deleted
                 content:
                     application/json:
-                        schema: SeriesResponseSchema
+                        schema: ErrorResponseSchema
                     application/xml:
-                        schema: SeriesResponseSchema
+                        schema: ErrorResponseSchema
             400:
                 description: Bad request
                 content:
@@ -211,14 +230,17 @@ class Series(MethodView):
         """
         try:
             data = decrypt(json.loads(get_jwt_identity()))
-        except Exception:
+        except Exception as e:
+            print(e)
             return generate_response({"msg": "Bad username or password"}, request, 401)
 
         try:
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                result = connection.execute(text("CALL deleteSeriesElement(:id);"), {"id": id}).first()
-        except Exception:
+                connection.execute(text("CALL deleteSeriesElement(:id);"), {"id": id})
+                connection.commit()
+        except Exception as e:
+            print(e)
             return generate_response({"msg": "Bad request"}, request, 400)
 
-        return generate_response(result, request)
+        return generate_response({"msg": "Operation successful"}, request)

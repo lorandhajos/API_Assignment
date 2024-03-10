@@ -55,11 +55,13 @@ class UserLogin(MethodView):
 
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                user_id = connection.execute(text("SELECT account_id from account WHERE email=:email AND password=:password"),
+                # TODO: update permissions for login
+                user_id = connection.execute(text("SELECT * FROM login(:email, :password);"),
                                              {"email": email, "password": password}).first()
 
             result = encrypt(f"{data}:{user_id[0]}")
-        except Exception:
+        except Exception as e:
+            print(e)
             return generate_response({"msg": "Bad username or password"}, request, 401)
 
         access_token = create_access_token(identity=result)

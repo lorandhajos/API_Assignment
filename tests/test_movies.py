@@ -25,7 +25,7 @@ class TestMovies(unittest.TestCase):
             'Accept': 'application/json',
             'Authorization': f'Bearer {self.token}'
         }
-        result = requests.get('http://localhost/api/v1/movies/1/', headers=headers)
+        result = requests.get('http://localhost/api/v1/movies/1', headers=headers)
 
         self.assertEqual(result.status_code, 200)
 
@@ -35,13 +35,13 @@ class TestMovies(unittest.TestCase):
             'Authorization': f'Bearer {self.token}'
         }
         data = {
-            "duration": 1,
-            "movie_id": 1,
-            "tile": "example"
+            "id": 1,
+            "tile": "example",
+            "duration": 1
         }
         result = requests.post('http://localhost/api/v1/movies', headers=headers, json=data)
 
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.status_code, 201)
 
     def test_put_movies(self):
         headers = {
@@ -49,11 +49,11 @@ class TestMovies(unittest.TestCase):
             'Authorization': f'Bearer {self.token}'
         }
         data = {
-            "duration": 1,
-            "movie_id": 1,
-            "tile": "example"
+            "id": 1,
+            "title": "example",
+            "duration": 1
         }
-        result = requests.put('http://localhost/api/v1/movies/1/', headers=headers, json=data)
+        result = requests.put('http://localhost/api/v1/movies/1', headers=headers, json=data)
 
         self.assertEqual(result.status_code, 200)
 
@@ -62,6 +62,6 @@ class TestMovies(unittest.TestCase):
             'Accept': 'application/json',
             'Authorization': f'Bearer {self.token}'
         }
-        result = requests.delete('http://localhost/api/v1/movies', headers=headers)
+        result = requests.delete('http://localhost/api/v1/movies/1', headers=headers)
 
         self.assertEqual(result.status_code, 200)
