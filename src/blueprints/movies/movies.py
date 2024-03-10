@@ -1,3 +1,4 @@
+from datetime import timedelta
 import json
 
 from flask import request
@@ -37,9 +38,9 @@ class Movies(MethodView):
                 description: Movie created
                 content:
                     application/json:
-                        schema: MovieResponseSchema
+                        schema: ErrorResponseSchema
                     application/xml:
-                        schema: MovieResponseSchema
+                        schema: ErrorResponseSchema
             400:
                 description: Bad request
                 content:
@@ -60,15 +61,20 @@ class Movies(MethodView):
             return generate_response({"msg": "Bad username or password"}, request, 401)
 
         try:
+            title = request.json.get('title')
+            duration = request.json.get('duration')
+            duration = timedelta(seconds=duration)
+
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                result = connection.execute(text("CALL createMovieElement(:id, :title, :duration, :views)",
-                                                 {"id": request.json.get('id'), "title": request.json.get('title'),
-                                                  "duration": request.json.get('duration'), "views": 0}))
-        except Exception:
+                connection.execute(text("CALL createMovieElement(:title, :duration, :views);"),
+                                        {"title": title, "duration": duration, "views": 0})
+                connection.commit()
+        except Exception as e:
+            print(e)
             return generate_response({"msg": "Bad request"}, request, 400)
 
-        return generate_response(result, 201)
+        return generate_response({"msg": "Operation successful"}, request, 201)
 
     @jwt_required(optional=False)
     def get(self, id=None):
@@ -112,20 +118,22 @@ class Movies(MethodView):
             engine = get_db_engine(data)
             with engine.connect() as connection:
                 if id is None:
-                    result = connection.execute(text("SELECT * FROM selectmovie()"))
+                    result = connection.execute(text("SELECT * FROM selectmovie;"))
                 else:
-                    result = connection.execute(text("SELECT * FROM selectmovie WHERE movie_id=:id"),
+                    result = connection.execute(text("SELECT * FROM selectmovie WHERE movie_id=:id;"),
                                                 {"id": id})
-        except Exception:
+        except Exception as e:
+            print(e)
             return generate_response({"msg": "Bad request"}, request, 400)
 
+        many = isinstance(result, list)
         schema = MovieResponseSchema()
-        result = schema.dump(result, many=True)
+        result = schema.dump(result, many=many)
 
-        return generate_response(result, 201)
+        return generate_response(result, request)
 
     @jwt_required(optional=False)
-    def put(self):
+    def put(self, id):
         """
         Update movie
         ---
@@ -134,6 +142,13 @@ class Movies(MethodView):
         description: Update movie
         security:
             - JWT: []
+        parameters:
+            - in: path
+              name: id
+              schema:
+                type: integer
+              required: false
+              description: The movie ID
         requestBody:
             content:
                 application/json:
@@ -143,9 +158,9 @@ class Movies(MethodView):
                 description: Movie updated
                 content:
                     application/json:
-                        schema: MovieResponseSchema
+                        schema: ErrorResponseSchema
                     application/xml:
-                        schema: MovieResponseSchema
+                        schema: ErrorResponseSchema
             400:
                 description: Bad request
                 content:
@@ -166,18 +181,23 @@ class Movies(MethodView):
             return generate_response({"msg": "Bad username or password"}, request, 401)
 
         try:
+            title = request.json.get('title')
+            duration = request.json.get('duration')
+            duration = timedelta(seconds=duration)
+
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                result = connection.execute(text("CALL updateMovieElement(:id, :title, :duration, :views)",
-                                                 {"id": request.json.get('id'), "title": request.json.get('title'),
-                                                  "duration": request.json.get('duration'), "views": 0}))
-        except Exception:
+                connection.execute(text("CALL updateMovieElement(:id, :title, :duration, :views);"),
+                                        {"id": id, "title": title, "duration": duration, "views": 0})
+                connection.commit()
+        except Exception as e:
+            print(e)
             return generate_response({"msg": "Bad request"}, request, 400)
 
-        return generate_response(result, 201)
+        return generate_response({"msg": "Operation successful"}, request, 200)
 
     @jwt_required(optional=False)
-    def delete(self):
+    def delete(self, id):
         """
         Delete movie
         ---
@@ -191,9 +211,9 @@ class Movies(MethodView):
                 description: Movie deleted
                 content:
                     application/json:
-                        schema: MovieResponseSchema
+                        schema: ErrorResponseSchema
                     application/xml:
-                        schema: MovieResponseSchema
+                        schema: ErrorResponseSchema
             400:
                 description: Bad request
                 content:
@@ -217,8 +237,10 @@ class Movies(MethodView):
         try:
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                result = connection.execute(text(""))
-        except Exception:
+                connection.execute(text("CALL deleteMovieElement(:id);"), {"id": id})
+                connection.commit()
+        except Exception as e:
+            print(e)
             return generate_response({"msg": "Bad request"}, request, 400)
 
-        return generate_response(result, 201)
+        return generate_response({"msg": "Operation successful"}, request)

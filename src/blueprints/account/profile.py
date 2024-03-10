@@ -16,8 +16,12 @@ class ProfileSchema(Schema):
     language = fields.String(required=True)
     watchlist_id = fields.Integer(required=True)
     history_id = fields.Integer(required=True)
+    country = fields.String(required=True)
+    is_trial = fields.Bool(required=True)
+    is_discount = fields.Bool(required=True)
 
 class ProfileResponseSchema(Schema):
+    profile_id = fields.Integer(required=True)
     account_id = fields.Integer(required=True)
     profile_image = fields.String(required=True)
     profile_child = fields.Bool(required=True)
@@ -25,7 +29,9 @@ class ProfileResponseSchema(Schema):
     language = fields.String(required=True)
     watchlist_id = fields.Integer(required=True)
     history_id = fields.Integer(required=True)
-    profile_id = fields.Integer(required=True)
+    country = fields.String(required=True)
+    is_trial = fields.Bool(required=True)
+    is_discount = fields.Bool(required=True)
 
 class Profile(MethodView):
     @jwt_required(optional=False)
@@ -47,9 +53,9 @@ class Profile(MethodView):
                 description: Profile created
                 content:
                     application/json:
-                        schema: ProfileResponseSchema
+                        schema: ErrorResponseSchema
                     application/xml:
-                        schema: ProfileResponseSchema
+                        schema: ErrorResponseSchema
             400:
                 description: Bad request
                 content:
@@ -71,16 +77,18 @@ class Profile(MethodView):
             return generate_response({"msg": "Bad username or password"}, request, 401)
 
         try:
-            name = request.json.get('name')
+            profile_info = request.json
 
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                result = connection.execute(text(f"SELECT createProfile(:name, :account_id);"),
-                                            {"name": name, "account_id": data["account_id"]}).first()
-        except Exception:
+                connection.execute(text(f"CALL createProfileElement(:account_id, :profile_image, :profile_child, :age, :language, :watchlist_id, :history_id, :country, :is_trial, :is_discount);"),
+                                   profile_info)
+                connection.commit()
+        except Exception as e:
+            print(e)
             return generate_response({"msg": "Bad request"}, request, 400)
 
-        return generate_response(result, request, 201)
+        return generate_response({"msg": "Operation successful"}, request, 201)
 
     @jwt_required(optional=False)
     def get(self, id=None):
@@ -92,14 +100,21 @@ class Profile(MethodView):
         description: Returns the profile(s)
         security:
             - JWT: []
+        parameters:
+            - in: path
+              name: id
+              schema:
+                type: integer
+              required: false
+              description: Profile ID
         responses:
             200:
                 description: Profile(s) returned
                 content:
                     application/json:
-                        schema: ProfileSchema
+                        schema: ProfileResponseSchema
                     application/xml:
-                        schema: ProfileSchema
+                        schema: ProfileResponseSchema
             400:
                 description: Bad request
                 content:
@@ -123,15 +138,23 @@ class Profile(MethodView):
         try:
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                result = connection.execute(text(f"SELECT getProfilesForID(:account_id);"),
-                                            {"account_id": data["account_id"]}).all()
-        except Exception:
+                if id is None:
+                    result = connection.execute(text(f"SELECT * FROM selectProfile;")).fetchall()
+                else:
+                    result = connection.execute(text(f"SELECT * FROM selectProfile WHERE profile_id = :profile_id;"),
+                                            {"profile_id": id}).first()
+        except Exception as e:
+            print(e)
             return generate_response({"msg": "Bad request"}, request, 400)
+
+        many = isinstance(result, list)
+        schema = ProfileResponseSchema()
+        result = schema.dump(result, many=many)
 
         return generate_response(result, request)
 
     @jwt_required(optional=False)
-    def put(self, profile_id):
+    def put(self, id):
         """
         Profile
         ---
@@ -142,7 +165,7 @@ class Profile(MethodView):
             - JWT: []
         parameters:
             - in: path
-              name: profile_id
+              name: id
               schema:
                 type: integer
               required: true
@@ -180,19 +203,22 @@ class Profile(MethodView):
             return generate_response({"msg": "Bad username or password"}, request, 401)
 
         try:
-            name = request.json.get('name')
+            profile_info = request.json
+            profile_info["profile_id"] = id
 
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                result = connection.execute(text(f"SELECT updateProfile(:name, :profile_id);"),
-                                            {"name": name, "profile_id": profile_id}).first()
-        except Exception:
+                connection.execute(text("CALL updateProfileElement(:profile_id, :account_id, :profile_image, :profile_child, :age, :language, :country, :is_trial, :is_discount);"),
+                                   profile_info)
+                connection.commit()
+        except Exception as e:
+            print(e)
             return generate_response({"msg": "Bad request"}, request, 400)
 
-        return generate_response(result, request)
+        return generate_response({"msg": "Operation successful"}, request)
 
     @jwt_required(optional=False)
-    def delete(self, profile_id):
+    def delete(self, id):
         """
         Profile
         ---
@@ -203,7 +229,7 @@ class Profile(MethodView):
             - JWT: []
         parameters:
             - in: path
-              name: profile_id
+              name: id
               schema:
                 type: integer
               required: true
@@ -239,9 +265,11 @@ class Profile(MethodView):
         try:
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                result = connection.execute(text(f"SELECT deleteProfile(:profile_id);"),
-                                            {"profile_id": profile_id}).first()
-        except Exception:
+                connection.execute(text("CALL deleteProfileElement(:profile_id);"),
+                                   {"profile_id": id})
+                connection.commit()
+        except Exception as e:
+            print(e)
             return generate_response({"msg": "Bad request"}, request, 400)
 
-        return generate_response(result, request)
+        return generate_response({"msg": "Operation successful"}, request)

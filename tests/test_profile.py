@@ -25,7 +25,7 @@ class TestProfile(unittest.TestCase):
             'Accept': 'application/json',
             'Authorization': f'Bearer {self.token}'
         }
-        result = requests.get('http://localhost/api/v1/profile/1/', headers=headers)
+        result = requests.get('http://localhost/api/v1/profile/1', headers=headers)
 
         self.assertEqual(result.status_code, 200)
 
@@ -35,17 +35,20 @@ class TestProfile(unittest.TestCase):
             'Authorization': f'Bearer {self.token}'
         }
         data = {
-            "account_id": 0,
+            "account_id": 5,
             "age": 0,
-            "history_id": 0,
+            "history_id": 7,
             "language": "string",
             "profile_child": True,
             "profile_image": "string",
-            "watchlist_id": 0
+            "watchlist_id": 7,
+            "country": "string",
+            "is_trial": True,
+            "is_discount": True
         }
         result = requests.post('http://localhost/api/v1/profile', headers=headers, json=data)
 
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.status_code, 201)
 
     def test_put_profile(self):
         headers = {
@@ -53,15 +56,18 @@ class TestProfile(unittest.TestCase):
             'Authorization': f'Bearer {self.token}'
         }
         data = {
-            "account_id": 0,
+            "account_id": 1,
             "age": 0,
             "history_id": 0,
             "language": "string",
             "profile_child": True,
             "profile_image": "string",
-            "watchlist_id": 0
+            "watchlist_id": 0,
+            "country": "string",
+            "is_trial": True,
+            "is_discount": True
         }
-        result = requests.put('http://localhost/api/v1/profile/1/', headers=headers, json=data)
+        result = requests.put('http://localhost/api/v1/profile/1', headers=headers, json=data)
 
         self.assertEqual(result.status_code, 200)
 
@@ -70,6 +76,6 @@ class TestProfile(unittest.TestCase):
             'Accept': 'application/json',
             'Authorization': f'Bearer {self.token}'
         }
-        result = requests.delete('http://localhost/api/v1/profile', headers=headers)
+        result = requests.delete('http://localhost/api/v1/profile/1', headers=headers)
 
         self.assertEqual(result.status_code, 200)

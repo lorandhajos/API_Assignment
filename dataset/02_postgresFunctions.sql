@@ -158,6 +158,18 @@ BEGIN
 END;
 $$;
 
+CREATE OR REPLACE PROCEDURE createWatchlistMoviesElement(
+  IN p_watchlist_id integer,
+  IN p_movie_id integer
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  INSERT INTO watchlist_movies (watchlist_id, movie_id)
+  VALUES (p_watchlist_id, p_movie_id);
+END;
+$$;
+
 CREATE VIEW selectWatchlistMovies AS
 SELECT * FROM watchlist_movies;
 
@@ -199,6 +211,18 @@ BEGIN
 END;
 $$;
 
+CREATE OR REPLACE PROCEDURE createWatchlistSeriesElement(
+  IN p_watchlist_id integer,
+  IN p_series_id integer
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  INSERT INTO watchlist_series (watchlist_id, series_id)
+  VALUES (p_watchlist_id, p_series_id);
+END;
+$$;
+
 CREATE VIEW selectWatchlistSeries AS
 SELECT * FROM watchlist_series;
 
@@ -230,13 +254,29 @@ $$;
 CREATE OR REPLACE PROCEDURE createHistoryMoviesElement(
   IN p_history_movies_id integer,
   IN p_history_id integer,
-  IN p_movie_id integer
+  IN p_movie_id integer,
+  IN p_status_finished boolean,
+  IN p_status_time interval
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
-  INSERT INTO history_movies (history_movies_id, history_id, movie_id)
-  VALUES (p_history_movies_id, p_history_id, p_movie_id);
+  INSERT INTO history_movies (history_movies_id, history_id, movie_id, status_finished, status_time)
+  VALUES (p_history_movies_id, p_history_id, p_movie_id, p_status_finished, p_status_time);
+END;
+$$;
+
+CREATE OR REPLACE PROCEDURE createHistoryMoviesElement(
+  IN p_history_id integer,
+  IN p_movie_id integer,
+  IN p_status_finished boolean,
+  IN p_status_time interval
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  INSERT INTO history_movies (history_id, movie_id, status_finished, status_time)
+  VALUES (p_history_id, p_movie_id, p_status_finished, p_status_time);
 END;
 $$;
 
@@ -246,13 +286,15 @@ SELECT * FROM history_movies;
 CREATE OR REPLACE PROCEDURE updateHistoryMoviesElement(
   IN p_history_movies_id integer,
   IN p_history_id integer,
-  IN p_movie_id integer
+  IN p_movie_id integer,
+  IN p_status_finished boolean,
+  IN p_status_time interval
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
   UPDATE history_movies
-  SET history_id = p_history_id, movie_id = p_movie_id
+  SET history_id = p_history_id, movie_id = p_movie_id, status_finished = p_status_finished, status_time = p_status_time
   WHERE history_movies_id = p_history_movies_id;
 END;
 $$;
@@ -279,6 +321,18 @@ AS $$
 BEGIN
   INSERT INTO history_series (history_series_id, history_id, series_id)
   VALUES (p_history_series_id, p_history_id, p_series_id);
+END;
+$$;
+
+CREATE OR REPLACE PROCEDURE createHistorySeriesElement(
+  IN p_history_id integer,
+  IN p_series_id integer
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  INSERT INTO history_series (history_id, series_id)
+  VALUES (p_history_id, p_series_id);
 END;
 $$;
 
@@ -348,6 +402,60 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
   DELETE FROM interests WHERE profile_id = p_profile_id AND genre_id = p_genre_id;
+END;
+$$;
+
+/*genre*/
+
+CREATE OR REPLACE PROCEDURE createGenreElement(
+  IN p_genre_id integer,
+  IN p_name VARCHAR,
+  IN p_age_restriction integer
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  INSERT INTO genre (genre_id, name, age_restriction)
+  VALUES (p_genre_id, p_name, p_age_restriction);
+END;
+$$;
+
+CREATE OR REPLACE PROCEDURE createGenreElement(
+  IN p_name VARCHAR,
+  IN p_age_restriction integer
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  INSERT INTO genre (name, age_restriction)
+  VALUES (p_name, p_age_restriction);
+END;
+$$;
+
+CREATE VIEW selectGenre AS
+SELECT * FROM genre;
+
+CREATE OR REPLACE PROCEDURE updateGenreElement(
+  IN p_genre_id integer,
+  IN p_name VARCHAR,
+  IN p_age_restriction integer
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  UPDATE genre
+  SET name = p_name, age_restriction = p_age_restriction
+  WHERE genre_id = p_genre_id;
+END;
+$$;
+
+CREATE OR REPLACE PROCEDURE deleteGenreElement(
+  IN p_genre_id integer
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  DELETE FROM genre WHERE genre_id = p_genre_id;
 END;
 $$;
 
@@ -450,10 +558,22 @@ BEGIN
 END;
 $$;
 
+CREATE OR REPLACE PROCEDURE createSubscriptionElement(
+  IN p_description VARCHAR,
+  IN p_price real
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  INSERT INTO subscription (description, subscription_price)
+  VALUES (p_description, p_price);
+END;
+$$;
+
 CREATE VIEW selectSubscription AS
 SELECT * FROM subscription;
 
-CREATE OR REPLACE PROCEDURE updateUbscriptionElement(
+CREATE OR REPLACE PROCEDURE updateSubscriptionElement(
   IN p_subscription_id integer,
   IN p_description VARCHAR,
   IN p_price real
@@ -492,6 +612,20 @@ BEGIN
   VALUES (p_movie_id, p_title, p_duration, p_views);
 END;
 $$;
+
+CREATE OR REPLACE PROCEDURE createMovieElement(
+  IN p_title VARCHAR,
+  IN p_duration interval,
+  IN p_views integer
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  INSERT INTO movie (title, duration, views)
+  VALUES (p_title, p_duration, p_views);
+END;
+$$;
+
 
 CREATE VIEW selectMovie AS
 SELECT * FROM movie;
@@ -536,6 +670,18 @@ BEGIN
 END;
 $$;
 
+CREATE OR REPLACE PROCEDURE createSeriesElement(
+  IN p_title VARCHAR,
+  IN p_views integer
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  INSERT INTO series (title, views)
+  VALUES (p_title, p_views);
+END;
+$$;
+
 CREATE VIEW selectSeries AS
 SELECT * FROM series;
 
@@ -565,7 +711,7 @@ $$;
 
 /*class profile*/
 
-CREATE OR REPLACE PROCEDURE createSeriesElement(
+CREATE OR REPLACE PROCEDURE createProfileElement(
   IN p_profile_id integer,
   IN p_account_id integer,
   IN p_profile_image VARCHAR,
@@ -574,13 +720,35 @@ CREATE OR REPLACE PROCEDURE createSeriesElement(
   IN p_language VARCHAR,
   IN p_watchlist_id integer,
   IN p_history_id integer,
-  IN p_country VARCHAR
+  IN p_country VARCHAR,
+  IN p_is_trial boolean,
+  IN p_is_discount boolean
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
-  INSERT INTO profile (profile_id, account_id, profile_image, profile_child, age, language, watchlist_id, history_id, country)
-  VALUES (p_profile_id, p_account_id, p_profile_image, p_profile_child, p_age,  p_language, p_watchlist_id, p_history_id, p_country);
+  INSERT INTO profile (profile_id, account_id, profile_image, profile_child, age, language, watchlist_id, history_id, country, is_trial, is_discount)
+  VALUES (p_profile_id, p_account_id, p_profile_image, p_profile_child, p_age,  p_language, p_watchlist_id, p_history_id, p_country, p_is_discount, p_is_discount);
+END;
+$$;
+
+CREATE OR REPLACE PROCEDURE createProfileElement(
+  IN p_account_id integer,
+  IN p_profile_image VARCHAR,
+  IN p_profile_child boolean,
+  IN p_age integer,
+  IN p_language VARCHAR,
+  IN p_watchlist_id integer,
+  IN p_history_id integer,
+  IN p_country VARCHAR,
+  IN p_is_trial boolean,
+  IN p_is_discount boolean
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  INSERT INTO profile (account_id, profile_image, profile_child, age, language, watchlist_id, history_id, country, is_trial, is_discount)
+  VALUES (p_account_id, p_profile_image, p_profile_child, p_age,  p_language, p_watchlist_id, p_history_id, p_country, p_is_discount, p_is_discount);
 END;
 $$;
 
@@ -589,17 +757,20 @@ SELECT * FROM profile;
 
 CREATE OR REPLACE PROCEDURE updateProfileElement(
   IN p_profile_id integer,
+  IN p_account_id integer,
   IN p_profile_image VARCHAR,
   IN p_profile_child boolean,
   IN p_age integer,
   IN p_language VARCHAR,
-  IN p_country VARCHAR
+  IN p_country VARCHAR,
+  IN p_is_trial boolean,
+  IN p_is_discount boolean
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
   UPDATE profile
-  SET profile_image = p_profile_image, profile_child = p_profile_child, age = p_age, language = p_language, country = p_country
+  SET profile_image = p_profile_image, profile_child = p_profile_child, age = p_age, language = p_language, country = p_country, is_trial = p_is_trial, is_discount = p_is_discount
   WHERE profile_id = p_profile_id;
 END;
 $$;
@@ -634,12 +805,29 @@ BEGIN
 END;
 $$;
 
+CREATE OR REPLACE PROCEDURE createAccountElement(
+  IN p_email VARCHAR,
+  IN p_password VARCHAR,
+  IN p_payment_method VARCHAR,
+  IN p_blocked boolean,
+  IN p_login_attempts integer,
+  IN p_last_login date,
+  IN p_subscription_id integer
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  INSERT INTO account (email, password, payment_method, blocked, login_attempts, last_login, subscription_id)
+  VALUES (p_email, p_password, p_payment_method, p_blocked, p_login_attempts, p_last_login, p_subscription_id);
+END;
+$$;
+
 CREATE VIEW selectAccount AS
 SELECT * FROM account;
 
 CREATE OR REPLACE PROCEDURE updateAccountElement(
-IN p_account_id integer,
-IN p_email VARCHAR,
+  IN p_account_id integer,
+  IN p_email VARCHAR,
   IN p_password VARCHAR,
   IN p_payment_method VARCHAR,
   IN p_blocked boolean,
@@ -665,3 +853,23 @@ BEGIN
   DELETE FROM account WHERE account_id = p_account_id;
 END;
 $$;
+
+/*Ensuring that the account can have only 4 profiles*/
+CREATE OR REPLACE FUNCTION check_profile_limit()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF (SELECT COUNT(*) FROM profile WHERE profile_id = NEW.profile_id) >= 4 THEN
+        RAISE EXCEPTION 'Maximum limit of profiles (4) reached for this account';
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create a trigger to call the trigger function before insertion
+CREATE TRIGGER enforce_profile_limit
+BEFORE INSERT ON profile
+FOR EACH ROW EXECUTE FUNCTION check_profile_limit();
+
+/*View for the login*/
+CREATE VIEW selectLogin AS
+SELECT account_id, email, password FROM account;

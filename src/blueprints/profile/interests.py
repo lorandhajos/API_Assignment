@@ -32,9 +32,9 @@ class Interests(MethodView):
                 description: Interest created
                 content:
                     application/json:
-                        schema: InterestSchema
+                        schema: ErrorResponseSchema
                     application/xml:
-                        schema: InterestSchema
+                        schema: ErrorResponseSchema
             400:
                 description: Bad request
                 content:
@@ -56,13 +56,19 @@ class Interests(MethodView):
             return generate_response({"msg": "Bad username or password"}, request, 401)
 
         try:
+            profile_id = request.json.get('profile_id')
+            genre_id = request.json.get('genre_id')
+
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                result = connection.execute(text(""))
-        except Exception:
+                connection.execute(text("CALL createInterestElement(:profile_id, :genre_id);"),
+                                   {"profile_id": profile_id, "genre_id": genre_id})
+                connection.commit()
+        except Exception as e:
+            print(e)
             return generate_response({"msg": "Bad request"}, request, 400)
 
-        return generate_response(result, 201)
+        return generate_response({"msg": "Operation successful"}, request, 201)
 
     @jwt_required(optional=False)
     def get(self, id=None):
@@ -112,11 +118,19 @@ class Interests(MethodView):
         try:
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                result = connection.execute(text(""))
+                if id is None:
+                    result = connection.execute(text("SELECT * FROM selectInterests;")).fetchall()
+                else:
+                    result = connection.execute(text("SELECT * FROM selectInterests WHERE profile_id = :id;"),
+                                                {"id": id}).first()
         except Exception:
             return generate_response({"msg": "Bad request"}, request, 400)
 
-        return generate_response(result, 201)
+        many = isinstance(result, list)
+        schema = InterestSchema()
+        result = schema.dump(result, many=many)
+
+        return generate_response(result, request)
 
     @jwt_required(optional=False)
     def put(self, id):
@@ -168,13 +182,19 @@ class Interests(MethodView):
             return generate_response({"msg": "Bad username or password"}, request, 401)
 
         try:
+            genre_id = request.json.get('genre_id')
+            desired_genre_id = request.json.get('desired_genre_id')
+
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                result = connection.execute(text(""))
-        except Exception:
+                connection.execute(text("CALL updateInterestElement(:profile_id, :genre_id, :desired_genre_id);"),
+                                   {"profile_id": id, "genre_id": genre_id, "desired_genre_id": desired_genre_id})
+                connection.commit()
+        except Exception as e:
+            print(e)
             return generate_response({"msg": "Bad request"}, request, 400)
 
-        return generate_response(result, 201)
+        return generate_response({"msg": "Operation successful"}, request)
 
     @jwt_required(optional=False)
     def delete(self, id):
@@ -193,14 +213,20 @@ class Interests(MethodView):
                 type: integer
               required: true
               description: The interest ID
+            - in: query
+              name: profile_id
+              schema:
+                type: integer
+              required: false
+              description: The profile ID
         responses:
             200:
                 description: Interest deleted
                 content:
                     application/json:
-                        schema: InterestSchema
+                        schema: ErrorResponseSchema
                     application/xml:
-                        schema: InterestSchema
+                        schema: ErrorResponseSchema
             400:
                 description: Bad request
                 content:
@@ -222,10 +248,19 @@ class Interests(MethodView):
             return generate_response({"msg": "Bad username or password"}, request, 401)
 
         try:
+            if len(data.split(":")) > 2:
+                print(data)
+                profile_id = data[2]
+            else:
+                profile_id = request.args.get('profile_id')
+
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                result = connection.execute(text(""))
-        except Exception:
+                connection.execute(text("CALL deleteInterestElement(:profile_id, :genre_id);"),
+                                   {"profile_id": profile_id, "genre_id": id})
+                connection.commit()
+        except Exception as e:
+            print(e)
             return generate_response({"msg": "Bad request"}, request, 400)
 
-        return generate_response(result, 201)
+        return generate_response({"msg": "Operation successful"}, request)

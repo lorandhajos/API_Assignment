@@ -9,7 +9,6 @@ from sqlalchemy.sql import text
 from ..utils import decrypt, generate_response, get_db_engine
 
 class AccountSchema(Schema):
-    account_id = fields.Integer(required=True)
     email = fields.Email(required=True)
     password = fields.String(required=True)
     payment_method = fields.String(required=True)
@@ -38,9 +37,9 @@ class Account(MethodView):
                 description: Account created
                 content:
                     application/json:
-                        schema: AccountSchema
+                        schema: ErrorResponseSchema
                     application/xml:
-                        schema: AccountSchema
+                        schema: ErrorResponseSchema
             400:
                 description: Bad request
                 content:
@@ -62,28 +61,19 @@ class Account(MethodView):
             return generate_response({"msg": "Bad username or password"}, request, 401)
 
         try:
-            id = request.json.get('id')
-            email = request.json.get('email')
-            password = request.json.get('password')
-            payment_method = request.json.get('payment_method')
-            blocked = request.json.get('blocked')
-            login_attempts = request.json.get('login_attempts')
-            last_login = request.json.get('last_login')
-            subscription_id = request.json.get('subscription_id')
+            account_info = request.json
 
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                result = connection.execute(text("""CALL createAccountElement(:id, :email, :password,
-                                                 :payment_method, :blocked, :login_attempts, :last_login,
-                                                 :subscription_id);"""),
-                                            {"id": id, "email": email, "password": password,
-                                             "payment_method": payment_method, "blocked": blocked,
-                                             "login_attempts": login_attempts, "last_login": last_login,
-                                             "subscription_id": subscription_id}).first()
-        except Exception:
+                connection.execute(text("""CALL createAccountElement(:email, :password,
+                                        :payment_method, :blocked, :login_attempts, :last_login,
+                                        :subscription_id);"""), account_info)
+                connection.commit()
+        except Exception as e:
+            print(e)
             return generate_response({"msg": "Bad request"}, request, 400)
 
-        return generate_response(result, request, 201)
+        return generate_response({"msg": "Operation successful"}, request, 201)
 
     @jwt_required(optional=False)
     def get(self, id=None):
@@ -138,11 +128,13 @@ class Account(MethodView):
                 else:
                     result = connection.execute(text("SELECT * FROM selectaccount WHERE account_id=:id"),
                                                 {"id": id}).first()
-        except Exception:
+        except Exception as e:
+            print(e)
             return generate_response({"msg": "Bad request"}, request, 400)
 
+        many = isinstance(result, list)
         schema = AccountSchema()
-        result = schema.dump(result, many=True)
+        result = schema.dump(result, many=many)
 
         return generate_response(result, request)
 
@@ -172,9 +164,9 @@ class Account(MethodView):
                 description: Account updated
                 content:
                     application/json:
-                        schema: AccountSchema
+                        schema: ErrorResponseSchema
                     application/xml:
-                        schema: AccountSchema
+                        schema: ErrorResponseSchema
             400:
                 description: Bad request
                 content:
@@ -196,27 +188,19 @@ class Account(MethodView):
             return generate_response({"msg": "Bad username or password"}, request, 401)
 
         try:
-            email = request.json.get('email')
-            password = request.json.get('password')
-            payment_method = request.json.get('payment_method')
-            blocked = request.json.get('blocked')
-            login_attempts = request.json.get('login_attempts')
-            last_login = request.json.get('last_login')
-            subscription_id = request.json.get('subscription_id')
+            account_info = request.json
 
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                result = connection.execute(text("""CALL updateAccountElement(:id, :email, :password,
-                                                 :payment_method, :blocked, :login_attempts, :last_login,
-                                                 :subscription_id);"""),
-                                            {"id": id, "email": email, "password": password,
-                                             "payment_method": payment_method, "blocked": blocked,
-                                             "login_attempts": login_attempts, "last_login": last_login,
-                                             "subscription_id": subscription_id}).first()
-        except Exception:
+                connection.execute(text("""CALL updateAccountElement(:id, :email, :password,
+                                        :payment_method, :blocked, :login_attempts, :last_login,
+                                        :subscription_id);"""), account_info)
+                connection.commit()
+        except Exception as e:
+            print(e)
             return generate_response({"msg": "Bad request"}, request, 400)
 
-        return generate_response(result, request)
+        return generate_response({"msg": "Operation successful"}, request)
 
     @jwt_required(optional=False)
     def delete(self, id):
@@ -240,9 +224,9 @@ class Account(MethodView):
                 description: Account deleted
                 content:
                     application/json:
-                        schema: AccountSchema
+                        schema: ErrorResponseSchema
                     application/xml:
-                        schema: AccountSchema
+                        schema: ErrorResponseSchema
             400:
                 description: Bad request
                 content:
@@ -266,8 +250,10 @@ class Account(MethodView):
         try:
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                result = connection.execute(text("CALL deleteAccountElement(:id)"), {"id": id}).first()
-        except Exception:
+                connection.execute(text("CALL deleteAccountElement(:id)"), {"id": id})
+                connection.commit()
+        except Exception as e:
+            print(e)
             return generate_response({"msg": "Bad request"}, request, 400)
 
-        return generate_response(result, request)
+        return generate_response({"msg": "Operation successful"}, request)

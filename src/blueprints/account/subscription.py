@@ -37,9 +37,9 @@ class Subscription(MethodView):
                 description: Subscription created
                 content:
                     application/json:
-                        schema: SubscriptionResponseSchema
+                        schema: ErrorResponseSchema
                     application/xml:
-                        schema: SubscriptionResponseSchema
+                        schema: ErrorResponseSchema
             400:
                 description: Bad request
                 content:
@@ -66,12 +66,14 @@ class Subscription(MethodView):
 
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                result = connection.execute(text("SELECT createSubscriptionElement(:description, :subscription_price);"),
-                                            {"description": description, "subscription_price": subscription_price}).first()
-        except Exception:
+                connection.execute(text("CALL createSubscriptionElement(:description, :subscription_price);"),
+                                            {"description": description, "subscription_price": subscription_price})
+                connection.commit()
+        except Exception as e:
+            print(e)
             return generate_response({"msg": "Bad request"}, request, 400)
 
-        return generate_response(result, request, 201)
+        return generate_response({"msg": "Operation successful"}, request, 201)
 
     @jwt_required(optional=False)
     def get(self, id=None):
@@ -83,14 +85,21 @@ class Subscription(MethodView):
         description: Get subscription
         security:
             - JWT: []
+        parameters:
+            - in: path
+              name: id
+              schema:
+                type: integer
+              required: false
+              description: Subscription ID
         responses:
             200:
                 description: Subscription
                 content:
                     application/json:
-                        schema: SubscriptionSchema
+                        schema: SubscriptionResponseSchema
                     application/xml:
-                        schema: SubscriptionSchema
+                        schema: SubscriptionResponseSchema
             400:
                 description: Bad request
                 content:
@@ -115,13 +124,15 @@ class Subscription(MethodView):
             engine = get_db_engine(data)
             with engine.connect() as connection:
                 if id is None:
-                    result = connection.execute(text("SELECT * FROM selectsubscription")).all()
+                    result = connection.execute(text("SELECT * FROM selectSubscription")).all()
                 else:
-                    result = connection.execute(text("SELECT * FROM selectsubscription WHERE subscription_id=:id"),
+                    result = connection.execute(text("SELECT * FROM selectSubscription WHERE subscription_id=:id"),
                                                 {"id": id}).first()
-        except Exception:
+        except Exception as e:
+            print(e)
             return generate_response({"msg": "Bad request"}, request, 400)
 
+        many = isinstance(result, list)
         schema = SubscriptionResponseSchema()
         result = schema.dump(result, many=True)
 
@@ -153,9 +164,9 @@ class Subscription(MethodView):
                 description: Subscription updated
                 content:
                     application/json:
-                        schema: SubscriptionResponseSchema
+                        schema: ErrorResponseSchema
                     application/xml:
-                        schema: SubscriptionResponseSchema
+                        schema: ErrorResponseSchema
             400:
                 description: Bad request
                 content:
@@ -182,12 +193,13 @@ class Subscription(MethodView):
 
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                result = connection.execute(text("SELECT updateSubscriptionElement(:id, :description, :subscription_price);"),
-                                            {"id": id, "description": description, "subscription_price": subscription_price}).first()
-        except Exception:
+                connection.execute(text("CALL updateSubscriptionElement(:id, :description, :subscription_price);"),
+                                   {"id": id, "description": description, "subscription_price": subscription_price})
+        except Exception as e:
+            print(e)
             return generate_response({"msg": "Bad request"}, request, 400)
 
-        return generate_response(result, request)
+        return generate_response({"msg": "Operation successful"}, request)
 
     @jwt_required(optional=False)
     def delete(self, id):
@@ -211,9 +223,9 @@ class Subscription(MethodView):
                 description: Subscription deleted
                 content:
                     application/json:
-                        schema: SubscriptionResponseSchema
+                        schema: ErrorResponseSchema
                     application/xml:
-                        schema: SubscriptionResponseSchema
+                        schema: ErrorResponseSchema
             400:
                 description: Bad request
                 content:
@@ -237,9 +249,10 @@ class Subscription(MethodView):
         try:
             engine = get_db_engine(data)
             with engine.connect() as connection:
-                result = connection.execute(text("SELECT deleteSubscriptionElement(:id);"),
-                                            {"id": id}).first()
-        except Exception:
+                connection.execute(text("CALL deleteSubscriptionElement(:id);"), {"id": id})
+                connection.commit()
+        except Exception as e:
+            print(e)
             return generate_response({"msg": "Bad request"}, request, 400)
 
-        return generate_response(result, request)
+        return generate_response({"msg": "Operation successful"}, request)
