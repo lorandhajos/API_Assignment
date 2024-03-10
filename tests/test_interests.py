@@ -60,6 +60,6 @@ class TestInterests(unittest.TestCase):
             'Accept': 'application/json',
             'Authorization': f'Bearer {self.token}'
         }
-        result = requests.delete('http://localhost/api/v1/interests/1', headers=headers)
+        result = requests.delete('http://localhost/api/v1/interests/1?profile_id=1', headers=headers)
 
         self.assertEqual(result.status_code, 200)

@@ -213,6 +213,12 @@ class Interests(MethodView):
                 type: integer
               required: true
               description: The interest ID
+            - in: query
+              name: profile_id
+              schema:
+                type: integer
+              required: false
+              description: The profile ID
         responses:
             200:
                 description: Interest deleted
@@ -240,13 +246,13 @@ class Interests(MethodView):
             data = decrypt(json.loads(get_jwt_identity()))
         except Exception:
             return generate_response({"msg": "Bad username or password"}, request, 401)
-        # TODO: Figure out how to implement deletion
+
         try:
-            if len(data.split(":")) > 3:
+            if len(data.split(":")) > 2:
                 print(data)
                 profile_id = data[2]
             else:
-                raise Exception("Bad request")
+                profile_id = request.args.get('profile_id')
 
             engine = get_db_engine(data)
             with engine.connect() as connection:
